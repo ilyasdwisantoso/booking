@@ -35,6 +35,8 @@ Route::group(['middleware' => ['isAdmin','auth'],'prefix' => 'admin', 'as' => 'a
     Route::resource('rooms', \App\Http\Controllers\Admin\RoomController::class);
     Route::delete('rooms_mass_destroy', [\App\Http\Controllers\Admin\RoomController::class, 'massDestroy'])->name('rooms.mass_destroy');
     Route::resource('customers', \App\Http\Controllers\Admin\CustomerController::class);
+
+
     Route::delete('customers_mass_destroy', [\App\Http\Controllers\Admin\CustomerController::class, 'massDestroy'])->name('customers.mass_destroy');
     Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
     Route::delete('bookings_mass_destroy', [\App\Http\Controllers\Admin\BookingController::class, 'massDestroy'])->name('bookings.mass_destroy');
@@ -43,6 +45,9 @@ Route::group(['middleware' => ['isAdmin','auth'],'prefix' => 'admin', 'as' => 'a
     Route::post('find_rooms', [\App\Http\Controllers\Admin\FindRoomController::class, 'index']);
 
     Route::get('system_calendars', [\App\Http\Controllers\Admin\SystemCalendarController::class, 'index'])->name('system_calendars.index');
+
+
+    Route::resource('mahasiswa', \App\Http\Controllers\Admin\MahasiswaController::class );
 });
 
 Auth::routes();
