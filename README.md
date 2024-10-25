@@ -76,11 +76,9 @@ Proyek ini adalah **Sistem Akses Kontrol Ruang Kelas dan Presensi Mahasiswa** be
 
 -   **ESP32 Wrover CAM**:
     -   Digunakan untuk pengambilan gambar mahasiswa saat melakukan presensi.
-    -   Terhubung ke sistem Laravel untuk mengirim data presensi beserta gambar.
+    -   Terhubung ke sistem Laravel untuk mengirim data presensi beserta gambar menggunakan HTTP Client.
 -   **GM67 QR Code Scanner**:
-
     -   Digunakan untuk memindai QR Code dosen dan mahasiswa sesuai dengan jadwal ruang kelas yang telah ditentukan.
-
 -   **Relay & Keypad**:
     -   Mengontrol akses pintu ruang kelas dan pengisian token untuk akses kelas jika dosen tidak hadir.
 
@@ -94,10 +92,10 @@ Proyek ini adalah **Sistem Akses Kontrol Ruang Kelas dan Presensi Mahasiswa** be
 2. **Presensi Mahasiswa**:
 
     - Setelah pintu kelas dibuka oleh dosen, mahasiswa dapat memindai QR Code mereka untuk melakukan presensi.
-    - Kamera ESP32 Wrover CAM akan mengambil gambar mahasiswa sebagai bukti kehadiran.
+    - Kamera ESP32 Wrover CAM akan mengambil gambar mahasiswa sebagai bukti kehadiran dan mengunggahnya ke server menggunakan HTTP Client.
 
-3. **Integrasi IoT**:
-    - Semua perangkat IoT terhubung ke sistem Laravel melalui komunikasi **MQTT** yang memastikan data presensi dan akses kontrol disinkronkan dengan sistem.
+3. **Integrasi IoT dengan HTTP Client**:
+    - Semua perangkat IoT terhubung ke sistem Laravel melalui HTTP Client yang memastikan data presensi dan akses kontrol tersimpan di server dengan aman.
 
 ## Kontribusi
 
