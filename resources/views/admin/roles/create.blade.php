@@ -30,7 +30,7 @@
                     </div>
                     <div class="form-group">
                         <label for="permissions">{{ __('Permission') }}</label>
-                        <select name="permissions[]" id="permissions" class="form-control select2" multiple="multiple" required>
+                        <select name="permissions[]" id="permissions" class="form-control select2" multiple="multiple" size="70px" required>
                             @foreach($permissions as $id => $permissions)
                                 <option value="{{ $id }}" {{ (in_array($id, old('permissions', [])) || isset($role) && $role->permissions->contains($id)) ? 'selected' : '' }}>{{ $permissions }}</option>
                             @endforeach

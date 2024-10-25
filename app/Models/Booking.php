@@ -3,90 +3,82 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
     use HasFactory;
 
+    protected $table = 'bookings';
     protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $fillable = [
+        'Kode_Kelas',
+        'code_token',
+        'prodi_id',
+        'matakuliah_id',
+        'dosen_id' ,
+        'ruangan_id' ,
+        'day_of_week',
+        'start_time',
+        'end_time',
+        'status',
+    ];
 
-    public function customer()
+    protected $appends = ['day_of_week_text', 'status_text']; // jika membutuhkan
+
+    public function mahasiswas()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsToMany(Mahasiswa::class, 'classmahasiswa', 'booking_id', 'mahasiswas_NIM', 'id', 'NIM');
     }
 
-    public function room()
-    {
-        return $this->belongsTo(Room::class);
+    public function attandances(){
+        return $this->hasMany(Attendance::class);
     }
 
-     /**
-     * Set attribute to date format
-     * @param $input
-     */
-    public function setTimeFromAttribute($input)
+    public function prodi()
     {
-        if ($input != null && $input != '') {
-            $this->attributes['time_from'] = Carbon::createFromFormat('Y-m-d H:i', $input)->format('Y-m-d H:i');
-        } else {
-            $this->attributes['time_from'] = null;
-        }
+        return $this->belongsTo(Prodi::class, 'prodi_id');
     }
 
-    /**
-     * Get attribute from date format
-     * @param $input
-     *
-     * @return string
-     */
-    public function getTimeFromAttribute($input)
+    public function matakuliah()
     {
-        $zeroDate = str_replace(['Y', 'm', 'd'], ['0000', '00', '00'],'Y-m-d H:i:s');
-
-        if ($input != $zeroDate && $input != null) {
-            return Carbon::createFromFormat('Y-m-d H:i:s', $input)->format('Y-m-d H:i:s');
-        } else {
-            return '';
-        }
+        return $this->belongsTo(Matakuliah::class, 'matakuliah_id');
     }
 
-    /**
-     * Set attribute to date format
-     * @param $input
-     */
-    public function setTimeToAttribute($input)
+    public function dosen()
     {
-        if ($input != null && $input != '') {
-            $this->attributes['time_to'] = Carbon::createFromFormat('Y-m-d H:i', $input)->format('Y-m-d H:i');
-        } else {
-            $this->attributes['time_to'] = null;
-        }
+        return $this->belongsTo(Dosen::class, 'dosen_id');
     }
 
-    /**
-     * Get attribute from date format
-     * @param $input
-     *
-     * @return string
-     */
-    public function getTimeToAttribute($input)
+    public function ruangan()
     {
-        $zeroDate = str_replace(['Y', 'm', 'd'], ['0000', '00', '00'],'Y-m-d H:i');
-
-        if ($input != $zeroDate && $input != null) {
-            return Carbon::createFromFormat('Y-m-d H:i:s', $input)->format('Y-m-d H:i:s');
-        } else {
-            return '';
-        }
+        return $this->belongsTo(Ruangan::class, 'ruangan_id');
     }
 
-    public function getStatusAttribute($input) {
-        return [
-            0 => 'Created',
-            1 => 'Completed',
-            2 => 'Cancelled'
-        ][$input];
+    public function qrmahasiswa()
+    {
+        return $this->hasMany(Qrmahasiswa::class);
+    }
+
+    public function getDayOfWeekTextAttribute()
+    {
+        $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return $days[$this->day_of_week];
+    }
+
+    public function getStatusTextAttribute() // jika membutuhkan
+    {
+        return $this->status == 'kelas dimulai' ? 'Kelas Sedang Dimulai' : 'Kelas Belum Dimulai';
+    }
+
+    public function getDuration()
+    {
+        return Carbon::parse($this->start_time)->diffInMinutes(Carbon::parse($this->end_time));
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
     }
 }

@@ -13,7 +13,7 @@ class MahasiswaRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,10 +24,10 @@ class MahasiswaRequest extends FormRequest
     public function rules()
     {
         return [
-            'Nama' => 'required',
             'NIM' => 'required',
+            'Nama' => 'required',
             'tgl_lahir' => 'required',
-            
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
     }
 }

@@ -24,12 +24,18 @@ class BookingRequest extends FormRequest
     public function rules()
     {
         return [
-            'customer_id' => 'required',
-            'room_id' => 'required',
+            'Kode_Kelas' => 'required',
+            'kode_qrkelas' => 'required',
+            'mahasiswas_NIM' => 'required',
+            'prodi_id' => 'required',
+            'matakuliah_id' => 'required',
+            'dosen_id' => 'required',
+            'ruangan_id' => 'required',
             'time_from' => 'required|date_format:Y-m-d H:i',
             'time_to' => 'required|date_format:Y-m-d H:i',
             'additional_information' => 'required',
             'status' => 'required',
+        
         ];
     }
 }
