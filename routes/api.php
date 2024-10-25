@@ -6,6 +6,7 @@ use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\MahasiswaController;
 use App\Http\Controllers\ImageUploadController;
+use App\Http\Controllers\Admin\AccessControlController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,9 +24,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::post('/qrcode', [AttendanceController::class, 'verify']);
+Route::post('/attendance/verify-student', [AttendanceController::class, 'verifyStudent']);
 Route::post('/upload-photo', [AttendanceController::class, 'uploadPhoto']);
-Route::post('/access', [AttendanceController::class, 'verifyAccess']);
+Route::post('/access/verify', [AccessControlController::class, 'verifyAccess']);
 
 
 

@@ -64,54 +64,56 @@ class AttendanceController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function verify(Request $request)
-    {
-        // Validasi request
-        $qrCode = $request->input('qr_code');
+    public function verifyStudent(Request $request)
+{
+    $qrCode = $request->input('qr_code');
+    $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
 
-        // Cari mahasiswa berdasarkan QR code
-        $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
-
-        if (!$mahasiswa) {
-            return response()->json(['error' => 'Invalid QR Code'], 404);
-        }
-
-        $currentDateTime = Carbon::now();
-        $dayOfWeek = $currentDateTime->format('w');
-        $currentTime = $currentDateTime->format('H:i:s');
-
-        // Cari jadwal kelas yang sesuai dengan hari dan waktu saat ini
-        $classSchedule = Booking::where('day_of_week', $dayOfWeek)
-            ->where('start_time', '<=', $currentTime)
-            ->where('end_time', '>=', $currentTime)
-            ->whereHas('mahasiswas', function ($query) use ($mahasiswa) {
-                $query->where('mahasiswas_NIM', $mahasiswa->NIM);
-            })
-            ->first();
-
-        if (!$classSchedule) {
-            return response()->json(['error' => 'No class schedule at this time or student not registered in this class'], 404);
-        }
-
-        // Cek apakah mahasiswa sudah melakukan presensi untuk kelas ini
-        $existingAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
-            ->where('booking_id', $classSchedule->id)
-            ->whereDate('attended_at', $currentDateTime->toDateString())
-            ->first();
-
-        if ($existingAttendance) {
-            return response()->json(['error' => 'Already attended'], 400);
-        }
-
-        // Buat data presensi baru
-        $attendance = Attendance::create([
-            'mahasiswas_NIM' => $mahasiswa->NIM,
-            'booking_id' => $classSchedule->id,
-            'attended_at' => $currentDateTime,
-        ]);
-
-        return response()->json(['success' => 'Attendance marked successfully', 'attendance_id' => $attendance->id], 200);
+    if (!$mahasiswa) {
+        return response()->json(['error' => 'Invalid QR Code'], 404);
     }
+
+    $currentDateTime = Carbon::now();
+    $dayOfWeek = $currentDateTime->format('w');
+    $currentTime = $currentDateTime->format('H:i:s');
+
+    // Cek apakah mahasiswa terdaftar pada kelas yang sesuai dengan waktu saat ini
+    $classSchedule = Booking::where('day_of_week', $dayOfWeek)
+        ->where('start_time', '<=', $currentTime)
+        ->where('end_time', '>=', $currentTime)
+        ->where('room_status', 'open') // Pastikan ruangan sudah "open"
+        ->whereHas('mahasiswas', function ($query) use ($mahasiswa) {
+            $query->where('mahasiswas_NIM', $mahasiswa->NIM);
+        })
+        ->first();
+
+    if (!$classSchedule) {
+        return response()->json(['error' => 'No active class for this schedule or room not opened'], 404);
+    }
+
+    // Cek apakah mahasiswa sudah presensi untuk kelas ini
+    $existingAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
+        ->where('booking_id', $classSchedule->id)
+        ->whereDate('attended_at', $currentDateTime->toDateString())
+        ->first();
+
+    if ($existingAttendance) {
+        return response()->json(['error' => 'Already attended'], 400);
+    }
+
+    // Catat presensi baru
+    $attendance = Attendance::create([
+        'mahasiswas_NIM' => $mahasiswa->NIM,
+        'booking_id' => $classSchedule->id,
+        'attended_at' => $currentDateTime,
+    ]);
+
+    return response()->json([
+        'success' => 'Attendance marked successfully',
+        'attendance_id' => $attendance->id
+    ], 200);
+}
+
 
     public function uploadPhoto(Request $request)
     {
@@ -139,46 +141,8 @@ class AttendanceController extends Controller
         }
     }
 
-
-    public function verifyAccess(Request $request)
-    {
-        $qrCode = $request->input('qr_code');
-        $token = $request->input('token');
-
-        // Cek apakah QR Code atau token valid
-        $dosen = Dosen::where('qr_code', $qrCode)
-                    ->orWhereHas('bookings', function($query) use ($token) {
-                        $query->where('code_token', $token);
-                    })
-                    ->first();
-
-        if (!$dosen) {
-            return response()->json(['error' => 'Access Denied'], 403);
-        }
-
-        // Cek apakah dosen memiliki jadwal kelas yang aktif
-        $currentDateTime = Carbon::now();
-        $dayOfWeek = $currentDateTime->format('w');
-
-        $classSchedule = Booking::where('dosen_id', $dosen->id)
-            ->where('day_of_week', $dayOfWeek)
-            ->first();
-
-        if (!$classSchedule) {
-            return response()->json(['error' => 'No active class for this schedule'], 404);
-        }
-
-        // Periksa status ruangan
-        $roomStatus = $classSchedule->room_status == 'locked' ? 'open' : 'locked';
-        $classSchedule->update(['room_status' => $roomStatus]);
-
-        return response()->json([
-            'success' => 'Status updated',
-            'action' => $roomStatus,
-            'room_status' => $classSchedule->room_status
-        ], 200);
-    }
-
+    
+    
     /**
      * Display the specified resource.
      *
