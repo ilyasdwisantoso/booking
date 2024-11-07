@@ -76,16 +76,33 @@ class BookingController extends Controller
      */
     public function create(Request $request)
     {
-        abort_if(Gate::denies('booking_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-        $mahasiswas = Mahasiswa::get()->pluck('Nama', 'NIM');
+        $user = auth()->user();
+    
+        // Ambil data yang sama dengan admin
         $prodi = Prodi::get()->pluck('nama_prodi', 'id');
         $matakuliah = Matakuliah::get()->pluck('Nama_MK', 'id');
-        $dosen = Dosen::get()->pluck('nama_dosen', 'id');
         $ruangan = Ruangan::get()->pluck('no_ruangan', 'id');
-
-        return view('admin.booking.create', compact('mahasiswas', 'prodi', 'matakuliah', 'dosen', 'ruangan'));
+    
+        if ($user->isAdmin()) {
+            // Admin: dapat melihat semua data mahasiswa dan dosen
+            $mahasiswas = Mahasiswa::get()->pluck('Nama', 'NIM');
+            $dosen = Dosen::get()->pluck('nama_dosen', 'id');
+    
+            return view('admin.booking.create', compact('mahasiswas', 'prodi', 'matakuliah', 'dosen', 'ruangan'));
+        } elseif ($user->isDosen()) {
+            // Dosen: hanya melihat data dosen yang login dan semua data mahasiswa
+            $mahasiswas = Mahasiswa::get()->pluck('Nama', 'NIM');
+            
+            // Ambil data dosen yang login
+            $dosen = $user->dosen; // Mengambil relasi dosen dari user
+    
+            return view('dosen.courses.create', compact('mahasiswas', 'prodi', 'matakuliah', 'dosen', 'ruangan'));
+        }
+    
+        abort(403, 'Unauthorized action.');
     }
+    
+
 
     /**
      * Store a newly created resource in storage.
@@ -94,46 +111,61 @@ class BookingController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(StoreBookingRequest $request)
-    {
-        abort_if(Gate::denies('booking_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+{
+    $user = auth()->user();
+    $start_time = $request->input('start_time');
+    $end_time = $request->input('end_time');
+    $day_of_week = $request->input('day_of_week');
+    $ruangan_id = $request->input('ruangan_id');
 
-        $start_time = $request->input('start_time');
-        $end_time = $request->input('end_time');
-        $day_of_week = $request->input('day_of_week');
-        $ruangan_id = $request->input('ruangan_id');
+    // Cek konflik jadwal di ruangan yang sama
+    $conflict = Booking::where('ruangan_id', $ruangan_id)
+        ->where('day_of_week', $day_of_week)
+        ->where(function($query) use ($start_time, $end_time) {
+            $query->where('start_time', '<', $end_time)
+                  ->where('end_time', '>', $start_time);
+        })->exists();
 
-        // Check for scheduling conflicts
-        $conflict = Booking::where('ruangan_id', $ruangan_id)
-            ->where('day_of_week', $day_of_week)
-            ->where(function($query) use ($start_time, $end_time) {
-                $query->where(function($q) use ($start_time, $end_time) {
-                    $q->where('start_time', '<', $end_time)
-                      ->where('end_time', '>', $start_time);
-                });
-            })->exists();
-
-        if ($conflict) {
-            return redirect()->route('admin.booking.create')->with([
-                'message' => 'Maaf, pada ruangan ini sudah dipakai.',
-                'alert-type' => 'danger'
-            ])->withInput($request->all());
-        }
-
-        // Generate token
-        $token = mt_rand(100000, 999999);
-        while ($this->codeTokenExists($token)) {
-            $token = mt_rand(100000, 999999);
-        }
-
-        // Save booking
-        $booking = Booking::create($request->validated() + ['code_token' => $token]);
-        $booking->mahasiswas()->sync($request->input('mahasiswas'));
-
-        return redirect()->route('admin.booking.index')->with([
-            'message' => 'Successfully created!',
-            'alert-type' => 'success'
-        ]);
+    if ($conflict) {
+        $routeRedirect = $user->isDosen() ? 'dosen.courses.create' : 'admin.booking.create';
+        return redirect()->route($routeRedirect)->with([
+            'message' => 'Jadwal bentrok dengan waktu lain di ruangan ini. Silakan pilih waktu atau ruangan lain.',
+            'alert-type' => 'danger'
+        ])->withInput($request->all());
     }
+
+    // Generate token unik untuk setiap booking
+    $token = mt_rand(100000, 999999);
+    while ($this->codeTokenExists($token)) {
+        $token = mt_rand(100000, 999999);
+    }
+
+    // Menyimpan booking berdasarkan peran user
+    $data = $request->validated() + ['code_token' => $token];
+
+    if ($user->isDosen()) {
+        // Set dosen_id untuk dosen yang login
+        $data['dosen_id'] = $user->dosen->id;
+    } else if ($user->isAdmin()) {
+        // Admin dapat memilih dosen_id dari form
+        $data['dosen_id'] = $request->input('dosen_id');
+    }
+
+    $booking = Booking::create($data);
+
+    // Dosen dan admin dapat menambahkan mahasiswa ke booking
+    if ($request->has('mahasiswas')) {
+        $booking->mahasiswas()->sync($request->input('mahasiswas'));
+    }
+
+    // Redirect sesuai role
+    $routeRedirect = $user->isDosen() ? 'dosen.courses.index' : 'admin.booking.index';
+    return redirect()->route($routeRedirect)->with([
+        'message' => 'Jadwal berhasil dibuat!',
+        'alert-type' => 'success'
+    ]);
+}
+
 
     /**
      * Display the specified resource.

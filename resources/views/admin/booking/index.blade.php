@@ -13,14 +13,14 @@
                     {{ __('Jadwal Kelas') }}
                 </h6>
                 <div class="ml-auto">
-                    @can('booking_create')
+                    
                     <a href="{{ route('admin.booking.create') }}" class="btn btn-primary">
                         <span class="icon text-white-50">
                             <i class="fa fa-plus"></i>
                         </span>
                         <span class="text">{{ __('New Kelas') }}</span>
                     </a>
-                    @endcan
+                  
                 </div>
             </div>
             <div class="card-body">

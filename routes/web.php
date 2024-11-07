@@ -80,7 +80,9 @@ Route::group(['middleware' => ['auth']], function() {
 
         Route::get('/update-class-status', [DosenDashboardController::class, 'updateClassStatus'])->name('update-class-status');
         Route::get('/get-class-statuses', [DosenDashboardController::class, 'getClassStatuses'])->name('get-class-statuses');
-
+        Route::get('courses/create', [BookingController::class, 'create'])->name('courses.create');
+        Route::post('courses', [BookingController::class, 'store'])->name('courses.store');
+        Route::get('courses', [DosenDashboardController::class, 'courses'])->name('courses.index'); // Tambahkan ini
        
 
         

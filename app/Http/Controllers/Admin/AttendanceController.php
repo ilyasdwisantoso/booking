@@ -109,7 +109,7 @@ class AttendanceController extends Controller
     ]);
 
     return response()->json([
-        'success' => 'Attendance marked successfully',
+        'Attendance marked successfully',
         'attendance_id' => $attendance->id
     ], 200);
 }

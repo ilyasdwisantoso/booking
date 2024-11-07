@@ -7,6 +7,16 @@
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex">
             <h6 class="m-0 font-weight-bold text-primary">{{ __('Daftar Jadwal Kuliah ') }}</h6>
+            <div class="ml-auto">
+            
+                <a href="{{ route('dosen.courses.create') }}" class="btn btn-primary">
+                    <span class="icon text-white-50">
+                        <i class="fa fa-plus"></i>
+                    </span>
+                    <span class="text">{{ __('New Kelas') }}</span>
+                </a>
+                
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
