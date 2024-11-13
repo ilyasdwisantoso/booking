@@ -1,10 +1,14 @@
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+<ul class="navbar-nav bg-gradient-midnight-blue sidebar sidebar-dark accordion" id="accordionSidebar">
 
+
+            
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url('/') }}">
-                <div class="sidebar-brand-text mx-3">{{ __('Homepage') }}</div>
+                <div class="sidebar-brand-icon">
+                    <img src="{{ asset('backend/img/logo-unj.png') }}" alt="Logo" style="width: 40px; height: 40px;">
+                </div>
+                <div class="sidebar-brand-text mx-3" style="font-size: 1.25rem; font-weight: bold;">{{ __('SIKIAR') }}</div>
             </a>
-
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 

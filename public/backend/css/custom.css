@@ -1,0 +1,17 @@
+.bg-solid-custom {
+    background-color: #5dd60c; /* Ganti dengan kode warna yang Anda suka */
+}
+
+.bg-gradient-blue-green {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #38ef7d 100%);
+}
+
+.bg-gradient-midnight-blue {
+    background: linear-gradient(135deg, #000d99 0%, #2b00c6 100%);
+}
+
+
+
+
+
+
