@@ -7,11 +7,14 @@
 }
 
 .bg-gradient-midnight-blue {
-    background: linear-gradient(135deg, #000d99 0%, #2b00c6 100%);
+    background: linear-gradient(135deg, #192287 0%, #35189b 100%);
 }
 
 
-
+.fa, .fas {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}
 
 
 
