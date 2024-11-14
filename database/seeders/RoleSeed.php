@@ -13,25 +13,18 @@ class RoleSeed extends Seeder
      * @return void
      */
     public function run()
-{
-    $roles = [
-        [
-            'id'    => 1,
-            'title' => 'admin',
-        ],
-        [
-            'id'    => 2,
-            'title' => 'mahasiswa',
-        ],
-        [
-            'id'    => 3,
-            'title' => 'dosen',
-        ],
-    ];
+    {
+        $roles = [
+            [
+                'id'    => 1,
+                'title' => 'admin',
+            ],
+            [
+                'id'    => 2,
+                'title' => 'user',
+            ],
+        ];
 
-    foreach ($roles as $role) {
-        Role::updateOrInsert(['id' => $role['id']], ['title' => $role['title']]);
+        Role::insert($roles);
     }
-}
-
 }
