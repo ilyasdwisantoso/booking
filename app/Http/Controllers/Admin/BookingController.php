@@ -25,13 +25,21 @@ class BookingController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        abort_if(Gate::denies('booking_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+{
+    abort_if(Gate::denies('booking_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $bookings = Booking::all();
+    $today = Carbon::now();
+    $todayDayOfWeek = $today->format('w');
 
-        return view('admin.booking.index', compact('bookings')); 
-    }
+    // Ambil jadwal untuk hari ini
+    $todayBookings = Booking::where('day_of_week', $todayDayOfWeek)->get();
+
+    // Ambil jadwal untuk hari mendatang
+    $upcomingBookings = Booking::where('day_of_week', '!=', $todayDayOfWeek)->get();
+
+    return view('admin.booking.index', compact('todayBookings', 'upcomingBookings'));
+}
+
 
     public function updateClassStatus()
 {

@@ -23,17 +23,35 @@ class DashboardController extends Controller
     }
 
     public function courses()
-    {
-        $dosen = Dosen::where('user_id', Auth::id())->first();
-        if (!$dosen) {
-            return redirect()->route('dosen.dashboard.index')->with([
-                'message' => 'Data dosen tidak ditemukan!',
-                'alert-type' => 'danger'
-            ]);
-        }
-        $bookings = Booking::where('dosen_id', $dosen->id)->get();
-        return view('dosen.courses.index', compact('bookings'));
+{
+    $dosen = Dosen::where('user_id', Auth::id())->first();
+
+    // Redirect jika data dosen tidak ditemukan
+    if (!$dosen) {
+        return redirect()->route('dosen.dashboard.index')->with([
+            'message' => 'Data dosen tidak ditemukan!',
+            'alert-type' => 'danger'
+        ]);
     }
+
+    // Hari ini berdasarkan format day_of_week (0 = Minggu, 1 = Senin, dst.)
+    $today = Carbon::now();
+    $todayDayOfWeek = $today->format('w');
+
+    // Data jadwal kelas hari ini
+    $todayBookings = Booking::where('dosen_id', $dosen->id)
+        ->where('day_of_week', $todayDayOfWeek)
+        ->get();
+
+    // Data jadwal kelas mendatang
+    $upcomingBookings = Booking::where('dosen_id', $dosen->id)
+        ->where('day_of_week', '!=', $todayDayOfWeek)
+        ->get();
+
+    // Kirim data ke view
+    return view('dosen.courses.index', compact('todayBookings', 'upcomingBookings'));
+}
+
 
     public function updateClassStatus()
 {
