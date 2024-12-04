@@ -70,7 +70,7 @@ Route::group(['middleware' => ['auth']], function() {
 
     // Dosen routes
     Route::group(['middleware' => 'isDosen', 'prefix' => 'dosen', 'as' => 'dosen.'], function() {
-        Route::get('/attendance/{id}', [DosenAttendanceController::class, 'show'])->name('attendance.show');
+        Route::get('attendance/{id}', [DosenAttendanceController::class, 'show'])->name('attendance.show');
         Route::get('dashboard', [DosenDashboardController::class, 'index'])->name('dashboard.index');
         Route::get('attendance', [DosenAttendanceController::class, 'index'])->name('attendance.index');
         Route::get('courses', [DosenDashboardController::class, 'courses'])->name('courses');
