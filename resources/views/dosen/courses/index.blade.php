@@ -8,14 +8,12 @@
         <div class="card-header py-3 d-flex">
             <h6 class="m-0 font-weight-bold text-primary">{{ __('Daftar Jadwal Kuliah ') }}</h6>
             <div class="ml-auto">
-            
                 <a href="{{ route('dosen.courses.create') }}" class="btn btn-primary">
                     <span class="icon text-white-50">
                         <i class="fa fa-plus"></i>
                     </span>
                     <span class="text">{{ __('New Kelas') }}</span>
                 </a>
-                
             </div>
         </div>
         <div class="card-body">
@@ -77,7 +75,6 @@
                                         </button>
                                     </form>
                                 </td>
-                                
                             </tr>
                         @endforeach
                     </tbody>
@@ -87,3 +84,42 @@
     </div>
 </div>
 @endsection
+
+@push('script-alt')
+<script>
+    // Fungsi untuk memperbarui status kelas
+    function updateClassStatus() {
+        fetch('/dosen/update-class-status')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                updateStatusDisplay(data.bookings);
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Fungsi untuk memperbarui tampilan status kelas dan ruangan di halaman
+    function updateStatusDisplay(bookings) {
+        bookings.forEach(booking => {
+            const statusElement = document.getElementById(`status-${booking.id}`);
+            const roomStatusElement = document.getElementById(`room-status-${booking.id}`);
+            if (statusElement) {
+                statusElement.innerHTML = `<span class="badge ${booking.status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success'}">${booking.status}</span>`;
+            }
+            if (roomStatusElement) {
+                roomStatusElement.innerHTML = `<span class="${booking.room_status === 'open' ? 'text-success' : 'text-danger'}">${booking.room_status === 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup'}</span>`;
+            }
+        });
+    }
+
+    // Panggil updateClassStatus setiap menit (10000ms)
+    setInterval(updateClassStatus, 10000);
+
+    $(function () {
+        $('.datatable-booking:not(.ajaxTable)').DataTable({
+            order: [[1, 'asc']],
+            pageLength: 50,
+        });
+    });
+</script>
+@endpush

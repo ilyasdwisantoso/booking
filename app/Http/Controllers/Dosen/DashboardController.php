@@ -36,37 +36,36 @@ class DashboardController extends Controller
     }
 
     public function updateClassStatus()
-    {
-        $currentDateTime = Carbon::now();
-        $dayOfWeek = $currentDateTime->format('w');
-        $currentTime = $currentDateTime->format('H:i:s');
+{
+    $currentDateTime = Carbon::now();
+    $dayOfWeek = $currentDateTime->format('w');
+    $currentTime = $currentDateTime->format('H:i:s');
 
-        $bookings = Booking::all();
+    // Hanya ambil jadwal kelas milik dosen yang login
+    $bookings = Booking::where('dosen_id', auth()->user()->dosen->id)->get();
 
-        foreach ($bookings as $booking) {
-            if ($booking->day_of_week == $dayOfWeek &&
-                $booking->start_time <= $currentTime &&
-                $booking->end_time >= $currentTime) {
-                $booking->status = 'kelas dimulai';
-            } else {
-                $booking->status = 'kelas belum dimulai';
-            }
-            $booking->save();
+    foreach ($bookings as $booking) {
+        if ($booking->day_of_week == $dayOfWeek &&
+            $booking->start_time <= $currentTime &&
+            $booking->end_time >= $currentTime) {
+            $booking->status = 'kelas dimulai';
+            $booking->room_status = 'open';
+        } else {
+            $booking->status = 'kelas belum dimulai';
+            $booking->room_status = 'closed';
         }
-
-        return response()->json(['success' => 'Class statuses updated']);
+        $booking->save();
     }
 
-    public function getClassStatuses()
-    {
-        try {
-            \Log::info('Fetching class statuses');
-            $bookings = Booking::all();
-            \Log::info('Bookings fetched successfully', ['bookings' => $bookings]);
-            return response()->json(['bookings' => $bookings]);
-        } catch (\Exception $e) {
-            \Log::error('Error fetching class statuses: ' . $e->getMessage());
-            return response()->json(['error' => 'Something went wrong'], 500);
-        }
-    }
+    return response()->json(['bookings' => $bookings]);
+}
+
+public function getClassStatuses()
+{
+    // Ambil jadwal kelas milik dosen yang login
+    $bookings = Booking::where('dosen_id', auth()->user()->dosen->id)->get();
+
+    return response()->json(['bookings' => $bookings]);
+}
+
 }
