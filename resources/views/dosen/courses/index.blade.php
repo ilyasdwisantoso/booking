@@ -23,7 +23,6 @@
                 <table class="table table-bordered table-striped table-hover datatable datatable-booking" cellspacing="0" width="100%">
                     <thead>
                         <tr>
-                            <th width="10"></th>
                             <th>No</th>
                             <th>Kode Kelas/(Nama Kelas)</th>
                             <th>Daftar Mahasiswa</th>
@@ -35,12 +34,13 @@
                             <th>Hari</th>
                             <th>Token</th>
                             <th>Status Kelas</th>
+                            <th>Status Ruangan</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($bookings as $booking)
                             <tr data-entry-id="{{ $booking->id }}">
-                                <td></td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $booking->Kode_Kelas }}</td>
                                 <td>
@@ -55,7 +55,29 @@
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td>{{ $booking->day_of_week_text }}</td>
                                 <td>{{ $booking->code_token }}</td>
-                                <td id="status-{{ $booking->id }}">{{ $booking->status }}</td>
+                                <td id="status-{{ $booking->id }}">
+                                    <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
+                                        {{ $booking->status }}
+                                    </span>
+                                </td>
+                                <td id="room-status-{{ $booking->id }}">
+                                    <span class="{{ $booking->room_status == 'open' ? 'text-success' : 'text-danger' }}">
+                                        {{ $booking->room_status == 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ route('dosen.courses.edit', $booking->id) }}" class="btn btn-warning btn-sm">
+                                        <i class="fa fa-edit"></i> Edit
+                                    </a>
+                                    <form action="{{ route('dosen.courses.destroy', $booking->id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fa fa-trash"></i> Hapus
+                                        </button>
+                                    </form>
+                                </td>
+                                
                             </tr>
                         @endforeach
                     </tbody>
@@ -65,69 +87,3 @@
     </div>
 </div>
 @endsection
-
-@push('script-alt')
-<script>
-    function updateClassStatus() {
-        fetch('{{ route("dosen.update-class-status") }}')
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                updateStatusDisplay();
-            })
-            .catch(error => console.error('Error:', error));
-    }
-
-    function updateStatusDisplay() {
-        fetch('{{ route("dosen.get-class-statuses") }}')
-            .then(response => response.json())
-            .then(data => {
-                data.bookings.forEach(booking => {
-                    const statusElement = document.getElementById(`status-${booking.id}`);
-                    if (statusElement) {
-                        statusElement.innerText = booking.status;
-                    }
-                });
-            })
-            .catch(error => console.error('Error:', error));
-    }
-
-    setInterval(updateClassStatus, 10000);
-
-    $(function () {
-        let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons);
-        let deleteButtonTrans = 'Delete selected';
-        let deleteButton = {
-            text: deleteButtonTrans,
-            url: "{{ route('admin.booking.mass_destroy') }}",
-            className: 'btn-danger',
-            action: function (e, dt, node, config) {
-                var ids = $.map(dt.rows({ selected: true }).nodes(), function (entry) {
-                    return $(entry).data('entry-id');
-                });
-                if (ids.length === 0) {
-                    alert('No selected');
-                    return;
-                }
-                if (confirm('Are you sure?')) {
-                    $.ajax({
-                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                        method: 'POST',
-                        url: config.url,
-                        data: { ids: ids, _method: 'DELETE' }
-                    }).done(function () { location.reload() });
-                }
-            }
-        };
-        dtButtons.push(deleteButton);
-        $.extend(true, $.fn.dataTable.defaults, {
-            order: [[ 1, 'asc' ]],
-            pageLength: 50,
-        });
-        $('.datatable-booking:not(.ajaxTable)').DataTable({ buttons: dtButtons });
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-        });
-    });
-</script>
-@endpush

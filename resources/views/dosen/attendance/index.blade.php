@@ -16,7 +16,7 @@
     <!-- Bagian Pemesanan Kelas -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex">
-            <h6 class="m-0 font-weight-bold text-primary">{{ __('Data Kelas') }}</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __('Update Jumlah Pertemuan Kelas') }}</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -55,6 +55,40 @@
         </div>
     </div>
 
+    <!-- Bagian Data Kelas Dosen -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex">
+        <h6 class="m-0 font-weight-bold text-primary">{{ __('Data Kelas Dosen') }}</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover datatable datatable-classes" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Kode Kelas</th>
+                        <th>Mata Kuliah</th>
+                        <th>Prodi</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($bookings as $booking)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $booking->Kode_Kelas }}</td>
+                            <td>{{ $booking->matakuliah->Nama_MK }}</td>
+                            <td>{{ $booking->prodi->nama_prodi }}</td>
+                            <td>
+                                <a href="{{ route('dosen.attendance.show', $booking->id) }}" class="btn btn-primary btn-sm">Lihat Kehadiran</a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Bagian Data Kehadiran -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex">
@@ -88,54 +122,9 @@
         </div>
     </div>
 
-    <!-- Bagian Catatan Kehadiran -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex">
-            <h6 class="m-0 font-weight-bold text-primary">{{ __('Catatan Kehadiran') }}</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover datatable datatable-attendance-records" cellspacing="0" width="100%">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nama Mahasiswa</th>
-                            <th>NIM</th>
-                            <th>Kode Kelas</th>
-                            <th>Tanggal</th>
-                            <th>Hari</th>
-                            <th>Jam</th>
-                            <th>Foto Database</th>
-                            <th>Foto Real-Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($attendances as $attendance)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $attendance->mahasiswas->Nama }}</td>
-                                <td>{{ $attendance->mahasiswas->NIM }}</td>
-                                <td>{{ $attendance->booking->Kode_Kelas }}</td>
-                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('Y-m-d') }}</td>
-                                <td>{{ $attendance->booking->day_of_week_text }}</td>
-                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('H:i:s') }}</td>
-                                <td>
-                                    @if ($attendance->mahasiswas->photo)
-                                        <img src="{{ url('photo').'/'.$attendance->mahasiswas->photo }}" alt="Database Photo" style="max-width:250px;max-height:250px">
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($attendance->photo)
-                                        <img src="{{ url('photo').'/'.$attendance->photo }}" alt="Database Photo" style="max-width:250px;max-height:250px">
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    
+</div>
+
 </div>
 @endsection
 
@@ -185,6 +174,19 @@
         $('.datatable-attendance:not(.ajaxTable)').DataTable({ buttons: dtButtons });
         $('.datatable-attendance-records:not(.ajaxTable)').DataTable({ buttons: dtButtons });
         $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+        });
+    });
+
+    $(function () {
+        // Initialize DataTables for Data Kelas Dosen
+        $('.datatable-classes:not(.ajaxTable)').DataTable({
+            order: [[1, 'asc']],
+            pageLength: 50,
+        });
+
+        // Adjust columns when tabs are switched
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
         });
     });

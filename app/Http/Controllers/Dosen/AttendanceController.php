@@ -94,5 +94,21 @@ class AttendanceController extends Controller
         return response()->noContent();
     }
 
+    public function show($id)
+{
+    // Ambil data kelas berdasarkan ID
+    $booking = Booking::with(['mahasiswas', 'attendances'])->findOrFail($id);
+
+    // Validasi apakah kelas tersebut milik dosen yang sedang login
+    if ($booking->dosen_id !== Auth::user()->dosen->id) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    // Data kehadiran mahasiswa di kelas ini
+    $attendances = Attendance::where('booking_id', $booking->id)->get();
+
+    return view('dosen.attendance.show', compact('booking', 'attendances'));
+}
+
 
 }

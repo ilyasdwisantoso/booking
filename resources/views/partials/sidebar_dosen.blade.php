@@ -1,45 +1,52 @@
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+<ul class="navbar-nav bg-gradient-midnight-blue sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url('/dosen/dashboard') }}">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
+        <div class="sidebar-brand-icon">
+            <img src="{{ asset('backend/img/logo-unj.png') }}" alt="Logo" style="width: 70px; height: 70px;">
         </div>
-        <div class="sidebar-brand-text mx-3">Dosen</div>
+        <div class="sidebar-brand-text mx-3" style="font-size: 1.5rem; font-weight: bold;">{{ __('Dosen') }}</div>
     </a>
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
     <!-- Nav Item - Dashboard -->
-    <li class="nav-item @if(Request::is('dosen/dashboard')) active @endif">
+    <li class="nav-item {{ Request::is('dosen/dashboard') ? 'active' : '' }}">
         <a class="nav-link" href="{{ url('/dosen/dashboard') }}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Dashboard</span></a>
+            <i class="fas fa-fw fa-tachometer-alt" style="color: #ff4757;"></i>
+            <span>{{ __('Dashboard') }}</span>
+        </a>
     </li>
 
     <!-- Divider -->
     <hr class="sidebar-divider">
 
     <!-- Heading -->
-    <div class="sidebar-heading">
-        Interface
+    <div class="sidebar-heading" style="font-size: 0.9rem; font-weight: bold;">
+        {{ __('Interface') }}
     </div>
 
     <!-- Nav Item - Attendance -->
-    <li class="nav-item @if(Request::is('dosen/attendance')) active @endif">
+    <li class="nav-item {{ Request::is('dosen/attendance') ? 'active' : '' }}">
         <a class="nav-link" href="{{ url('/dosen/attendance') }}">
-            <i class="fas fa-fw fa-calendar"></i>
-            <span>Attendance</span></a>
+            <i class="fas fa-fw fa-calendar" style="color: #ffa502;"></i>
+            <span>{{ __('Attendance') }}</span>
+        </a>
     </li>
 
     <!-- Nav Item - Courses -->
-    <li class="nav-item @if(Request::is('dosen/courses')) active @endif">
+    <li class="nav-item {{ Request::is('dosen/courses') ? 'active' : '' }}">
         <a class="nav-link" href="{{ url('/dosen/courses') }}">
-            <i class="fas fa-fw fa-book"></i>
-            <span>Course Schedule</span></a>
+            <i class="fas fa-fw fa-book" style="color: #1e90ff;"></i>
+            <span>
+                {{ __('Course Schedule') }}
+                @if(isset($countTodayBookings) && $countTodayBookings > 0)
+                    <span class="badge badge-pill badge-danger ml-1">{{ $countTodayBookings }}</span>
+                @endif
+            </span>
+        </a>
     </li>
-
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">

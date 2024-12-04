@@ -15,6 +15,7 @@ class Attendance extends Model
         'mahasiswas_NIM',
         'booking_id',
         'attended_at',
+        'pertemuan_ke',
         'photo'
     ];
 

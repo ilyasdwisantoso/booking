@@ -91,7 +91,7 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'No active class for this schedule or room not opened'], 404);
     }
 
-    // Cek apakah mahasiswa sudah presensi untuk kelas ini
+    // Cek apakah mahasiswa sudah presensi untuk kelas ini pada hari ini
     $existingAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
         ->where('booking_id', $classSchedule->id)
         ->whereDate('attended_at', $currentDateTime->toDateString())
@@ -101,16 +101,26 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'Already attended'], 400);
     }
 
+    // Tentukan "Pertemuan ke" berdasarkan jumlah presensi sebelumnya
+    $lastAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
+        ->where('booking_id', $classSchedule->id)
+        ->orderBy('pertemuan_ke', 'desc')
+        ->first();
+
+    $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
+
     // Catat presensi baru
     $attendance = Attendance::create([
         'mahasiswas_NIM' => $mahasiswa->NIM,
         'booking_id' => $classSchedule->id,
         'attended_at' => $currentDateTime,
+        'pertemuan_ke' => $pertemuanKe,
     ]);
 
     return response()->json([
-        'Attendance marked successfully',
-        'attendance_id' => $attendance->id
+        'message' => 'Attendance marked successfully',
+        'attendance_id' => $attendance->id,
+        'pertemuan_ke' => $attendance->pertemuan_ke,
     ], 200);
 }
 

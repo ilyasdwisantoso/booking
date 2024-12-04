@@ -83,7 +83,12 @@ Route::group(['middleware' => ['auth']], function() {
         Route::get('courses/create', [BookingController::class, 'create'])->name('courses.create');
         Route::post('courses', [BookingController::class, 'store'])->name('courses.store');
         Route::get('courses', [DosenDashboardController::class, 'courses'])->name('courses.index'); // Tambahkan ini
-       
+        Route::get('/attendance/{id}', [DosenAttendanceController::class, 'show'])->name('attendance.show');
+
+        Route::get('courses/{booking}/edit', [BookingController::class, 'editkelasDosen'])->name('courses.edit');
+        Route::put('courses/{booking}', [BookingController::class, 'updatekelasDosen'])->name('courses.update');
+
+        Route::delete('courses/{booking}', [BookingController::class, 'hapuskelasDosen'])->name('courses.destroy');
 
         
     });

@@ -34,26 +34,29 @@ class BookingController extends Controller
     }
 
     public function updateClassStatus()
-    {
-        $currentDateTime = Carbon::now();
-        $dayOfWeek = $currentDateTime->format('w');
-        $currentTime = $currentDateTime->format('H:i:s');
+{
+    $currentDateTime = Carbon::now();
+    $dayOfWeek = $currentDateTime->format('w');
+    $currentTime = $currentDateTime->format('H:i:s');
 
-        $bookings = Booking::all();
+    $bookings = Booking::all();
 
-        foreach ($bookings as $booking) {
-            if ($booking->day_of_week == $dayOfWeek &&
-                $booking->start_time <= $currentTime &&
-                $booking->end_time >= $currentTime) {
-                $booking->status = 'kelas dimulai';
-            } else {
-                $booking->status = 'kelas belum dimulai';
-            }
-            $booking->save();
+    foreach ($bookings as $booking) {
+        if ($booking->day_of_week == $dayOfWeek &&
+            $booking->start_time <= $currentTime &&
+            $booking->end_time >= $currentTime) {
+            $booking->status = 'kelas dimulai';
+            $booking->room_status = 'open'; // Ubah status ruangan menjadi "open"
+        } else {
+            $booking->status = 'kelas belum dimulai';
+            $booking->room_status = 'closed'; // Ubah status ruangan menjadi "closed"
         }
-
-        return response()->json(['success' => 'Class statuses updated']);
+        $booking->save();
     }
+
+    return response()->json(['success' => 'Class statuses and room statuses updated']);
+}
+
 
     public function getClassStatuses()
 {
@@ -189,16 +192,19 @@ class BookingController extends Controller
     public function edit(Booking $booking)
     {
         abort_if(Gate::denies('booking_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
+    
         $mahasiswas = Mahasiswa::get()->pluck('Nama', 'NIM');
         $prodi = Prodi::get()->pluck('nama_prodi', 'id');
         $matakuliah = Matakuliah::get()->pluck('Nama_MK', 'id');
         $dosen = Dosen::get()->pluck('nama_dosen', 'id');
         $ruangan = Ruangan::get()->pluck('no_ruangan', 'id');
-
+    
+        // Pastikan data `Booking` terkait mahasiswa di-load
+        $booking->load('mahasiswas');
+    
         return view('admin.booking.edit', compact('booking', 'mahasiswas', 'prodi', 'matakuliah', 'dosen', 'ruangan'));
     }
-
+    
     /**
      * Update the specified resource in storage.
      *
@@ -206,45 +212,50 @@ class BookingController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateBookingRequest $request, $id)
-    {
-        abort_if(Gate::denies('booking_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+    public function update(UpdateBookingRequest $request, Booking $booking)
+{
+    abort_if(Gate::denies('booking_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $start_time = $request->input('start_time');
-        $end_time = $request->input('end_time');
-        $day_of_week = $request->input('day_of_week');
-        $ruangan_id = $request->input('ruangan_id');
+    $start_time = $request->input('start_time');
+    $end_time = $request->input('end_time');
+    $day_of_week = $request->input('day_of_week');
+    $ruangan_id = $request->input('ruangan_id');
 
-        // Get the booking by ID
-        $booking = Booking::findOrFail($id);
+    // Cek konflik jadwal di ruangan yang sama
+    $conflict = Booking::where('ruangan_id', $ruangan_id)
+        ->where('day_of_week', $day_of_week)
+        ->where('id', '!=', $booking->id) // Jangan cek konflik dengan dirinya sendiri
+        ->where(function ($query) use ($start_time, $end_time) {
+            $query->where('start_time', '<', $end_time)
+                  ->where('end_time', '>', $start_time);
+        })
+        ->exists();
 
-        // Check for scheduling conflicts
-        $conflict = Booking::where('ruangan_id', $ruangan_id)
-            ->where('day_of_week', $day_of_week)
-            ->where('id', '!=', $booking->id)
-            ->where(function($query) use ($start_time, $end_time) {
-                $query->where(function($q) use ($start_time, $end_time) {
-                    $q->where('start_time', '<', $end_time)
-                      ->where('end_time', '>', $start_time);
-                });
-            })->exists();
-
-        if ($conflict) {
-            return redirect()->route('admin.booking.edit', $booking->id)->with([
-                'message' => 'Maaf, pada ruangan ini sudah dipakai.',
+    if ($conflict) {
+        return redirect()->route('admin.booking.edit', $booking->id)
+            ->with([
+                'message' => 'Jadwal bentrok dengan waktu lain di ruangan ini. Silakan pilih waktu atau ruangan lain.',
                 'alert-type' => 'danger'
-            ])->withInput($request->all());
-        }
-
-        // Update booking
-        $booking->update($request->validated());
-        $booking->mahasiswas()->sync($request->input('mahasiswas'));
-
-        return redirect()->route('admin.booking.index')->with([
-            'message' => 'Successfully updated!',
-            'alert-type' => 'info'
-        ]);
+            ])
+            ->withInput($request->all());
     }
+
+    // Perbarui data booking
+    $data = $request->validated(); // Validasi request menggunakan UpdateBookingRequest
+
+    // Jika mahasiswa terkait diubah
+    if ($request->has('mahasiswas')) {
+        $booking->mahasiswas()->sync($request->input('mahasiswas')); // Sinkronisasi mahasiswa
+    }
+
+    // Perbarui data utama booking
+    $booking->update($data);
+
+    return redirect()->route('admin.booking.index')->with([
+        'message' => 'Jadwal berhasil diperbarui!',
+        'alert-type' => 'success'
+    ]);
+}
 
     public function codeTokenExists($token)
     {
@@ -284,4 +295,150 @@ class BookingController extends Controller
         $qrcode = QrCode::size(400)->generate($booking->Kode_Kelas);
         return view('qrcode', compact('qrcode'));
     }
+
+    public function editkelasDosen(Booking $booking)
+{
+    // Validasi bahwa dosen yang login adalah dosen yang memiliki booking ini
+    if (auth()->user()->dosen->id !== $booking->dosen_id) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    // Ambil data yang diperlukan untuk form
+    $mahasiswas = Mahasiswa::get()->pluck('Nama', 'NIM');
+    $prodi = Prodi::get()->pluck('nama_prodi', 'id');
+    $matakuliah = Matakuliah::get()->pluck('Nama_MK', 'id');
+    $ruangan = Ruangan::get()->pluck('no_ruangan', 'id');
+
+    // Pastikan mahasiswa yang terkait di-load
+    $booking->load('mahasiswas');
+
+    return view('dosen.courses.edit', compact('booking', 'mahasiswas', 'prodi', 'matakuliah', 'ruangan'));
+
+}
+
+public function updatekelasDosen(Request $request, Booking $booking)
+{
+    \Log::info('User mencoba mengupdate Booking:', [
+        'user_id' => auth()->id(),
+        'dosen_id' => auth()->user()->dosen->id,
+        'booking_dosen_id' => $booking->dosen_id,
+    ]);
+
+    if (auth()->user()->dosen->id !== $booking->dosen_id) {
+        \Log::warning('Unauthorized action detected:', ['user_id' => auth()->id()]);
+        abort(403, 'Unauthorized action.');
+    }
+
+    \Log::info('Data yang diterima sebelum validasi:', $request->all());
+
+    try {
+        // Normalisasi waktu ke format H:i:s jika perlu
+        $normalizedData = $request->all();
+        $normalizedData['start_time'] = $this->normalizeTimeFormat($request->start_time);
+        $normalizedData['end_time'] = $this->normalizeTimeFormat($request->end_time);
+
+        \Log::info('Data setelah normalisasi waktu:', $normalizedData);
+
+        // Validasi input
+        $validatedData = \Validator::make($normalizedData, [
+            'Kode_Kelas' => 'required|string|max:255',
+            'prodi_id' => 'required|exists:prodi,id',
+            'matakuliah_id' => 'required|exists:matakuliah,id',
+            'ruangan_id' => 'required|exists:ruangan,id',
+            'day_of_week' => 'required|integer|between:0,6',
+            'start_time' => 'required|date_format:H:i:s',
+            'end_time' => 'required|date_format:H:i:s|after:start_time',
+            'mahasiswas' => 'nullable|array',
+            'mahasiswas.*' => 'exists:mahasiswas,NIM',
+        ])->validate();
+
+        \Log::info('Data yang telah divalidasi:', $validatedData);
+
+        // Cek konflik jadwal di ruangan yang sama
+        $conflict = Booking::where('ruangan_id', $validatedData['ruangan_id'])
+            ->where('day_of_week', $validatedData['day_of_week'])
+            ->where('id', '!=', $booking->id)
+            ->where(function ($query) use ($validatedData) {
+                $query->where('start_time', '<', $validatedData['end_time'])
+                      ->where('end_time', '>', $validatedData['start_time']);
+            })
+            ->exists();
+
+        if ($conflict) {
+            \Log::warning('Konflik ditemukan saat update:', [
+                'ruangan_id' => $validatedData['ruangan_id'],
+                'day_of_week' => $validatedData['day_of_week'],
+                'start_time' => $validatedData['start_time'],
+                'end_time' => $validatedData['end_time'],
+            ]);
+
+            return redirect()->route('dosen.courses.edit', $booking->id)
+                ->with([
+                    'message' => 'Jadwal bentrok dengan waktu lain di ruangan ini. Silakan pilih waktu atau ruangan lain.',
+                    'alert-type' => 'danger',
+                ])
+                ->withInput($request->all());
+        }
+
+        \Log::info('Booking sebelum diupdate:', $booking->toArray());
+
+        // Update data utama
+        $booking->update($validatedData);
+
+        \Log::info('Booking setelah diupdate:', $booking->fresh()->toArray());
+
+        if ($request->has('mahasiswas')) {
+            \Log::info('Sinkronisasi mahasiswa:', $validatedData['mahasiswas']);
+            $booking->mahasiswas()->sync($validatedData['mahasiswas']);
+        }
+
+        \Log::info('Proses update berhasil:', [
+            'booking_id' => $booking->id,
+            'user_id' => auth()->id(),
+        ]);
+
+        return redirect()->route('dosen.courses.index')->with([
+            'message' => 'Jadwal berhasil diperbarui!',
+            'alert-type' => 'success',
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('Kesalahan validasi terjadi:', [
+            'errors' => $e->errors(),
+            'input' => $request->all(),
+        ]);
+
+        return redirect()->back()->withErrors($e->errors())->withInput();
+    }
+}
+
+/**
+ * Normalisasi waktu ke format H:i:s.
+ */
+private function normalizeTimeFormat($time)
+{
+    if (preg_match('/^\d{2}:\d{2}$/', $time)) {
+        return $time . ':00';
+    }
+
+    return $time;
+}
+
+
+
+public function hapuskelasDosen(Booking $booking)
+{
+    // Pastikan dosen yang login adalah pemilik kelas
+    if (auth()->user()->dosen->id !== $booking->dosen_id) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    // Hapus kelas
+    $booking->delete();
+
+    return redirect()->route('dosen.courses.index')->with([
+        'message' => 'Kelas berhasil dihapus!',
+        'alert-type' => 'success'
+    ]);
+}
+
 }

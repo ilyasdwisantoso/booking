@@ -63,6 +63,7 @@
                             <th>Kode Kelas</th>
                             <th>Dosen</th>
                             <th>Matakuliah</th>
+                            <th>Pertemuan Ke</th>
                             <th>Tanggal</th>
                             <th>Hari</th>
                             <th>Jam</th>
@@ -80,6 +81,7 @@
                                 <td>{{ $attendance->booking->Kode_Kelas }}</td>
                                 <td>{{ $attendance->booking->dosen->nama_dosen }}</td>
                                 <td>{{ $attendance->booking->matakuliah->Nama_MK }}</td>
+                                <td>{{ $attendance->pertemuan_ke }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('Y-m-d') }}</td>
                                 <td>{{ $attendance->booking->day_of_week_text }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('H:i:s') }}</td>

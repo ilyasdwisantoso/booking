@@ -86,8 +86,13 @@
     
     <li class="nav-item">
         <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseBooking" aria-expanded="true" aria-controls="collapseBooking">
-            <i class="fas fa-calendar-alt"></i> <!-- Ikon tambahan untuk Jadwal Kelas -->
-            <span>{{ __('Jadwal Kelas') }}</span>
+            <i class="fas fa-calendar-alt"></i>
+            <span>
+                {{ __('Jadwal Kelas') }}
+                @if(isset($countTodayBookings) && $countTodayBookings > 0)
+                    <span class="badge badge-pill badge-danger ml-1">{{ $countTodayBookings }}</span>
+                @endif
+            </span>
         </a>
         <div id="collapseBooking" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
@@ -97,4 +102,5 @@
             </div>
         </div>
     </li>
+    
 </ul>

@@ -69,7 +69,7 @@ class Booking extends Model
 
     public function getStatusTextAttribute() // jika membutuhkan
     {
-        return $this->status == 'kelas dimulai' ? 'Kelas Sedang Dimulai' : 'Kelas Belum Dimulai';
+        return $this->status == 'kelas sedang berlangsung' ? 'kelas sedang berlangsung' : 'kelas belum dimulai';
     }
 
     public function getDuration()

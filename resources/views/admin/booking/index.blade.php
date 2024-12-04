@@ -39,7 +39,8 @@
                                 <th>Waktu</th>
                                 <th>Hari</th>
                                 <th>Token</th>
-                                <th>Status Kelas</th> <!-- Tambahkan kolom ini -->
+                                <th>Status Kelas</th>
+                                <th>Status Ruangan</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -62,6 +63,11 @@
                                 <td>{{ $booking->day_of_week_text }}</td>
                                 <td>{{ $booking->code_token }}</td>        
                                 <td id="status-{{ $booking->id }}">{{ $booking->status }}</td> <!-- Tambahkan kolom ini -->
+                                <td id="room-status-{{ $booking->id }}">
+                                    <span class="{{ $booking->room_status == 'open' ? 'text-success' : 'text-danger' }}">
+                                        {{ $booking->room_status == 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup' }}
+                                    </span>
+                                </td>
                                 <td>
                                     <a href="{{route('admin.booking.show', $booking->id)}}" class="btn btn-success">
                                         <i class="fa fa-eye"></i>
