@@ -70,6 +70,7 @@ Route::group(['middleware' => ['auth']], function() {
 
     // Dosen routes
     Route::group(['middleware' => 'isDosen', 'prefix' => 'dosen', 'as' => 'dosen.'], function() {
+        Route::get('/attendance/{id}', [DosenAttendanceController::class, 'show'])->name('attendance.show');
         Route::get('dashboard', [DosenDashboardController::class, 'index'])->name('dashboard.index');
         Route::get('attendance', [DosenAttendanceController::class, 'index'])->name('attendance.index');
         Route::get('courses', [DosenDashboardController::class, 'courses'])->name('courses');
@@ -83,7 +84,6 @@ Route::group(['middleware' => ['auth']], function() {
         Route::get('courses/create', [BookingController::class, 'create'])->name('courses.create');
         Route::post('courses', [BookingController::class, 'store'])->name('courses.store');
         Route::get('courses', [DosenDashboardController::class, 'courses'])->name('courses.index'); // Tambahkan ini
-        Route::get('/attendance/{id}', [DosenAttendanceController::class, 'show'])->name('attendance.show');
 
         Route::get('courses/{booking}/edit', [BookingController::class, 'editkelasDosen'])->name('courses.edit');
         Route::put('courses/{booking}', [BookingController::class, 'updatekelasDosen'])->name('courses.update');
