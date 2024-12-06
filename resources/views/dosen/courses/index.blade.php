@@ -4,6 +4,7 @@
 <div class="container-fluid">
     <h1 class="h3 mb-2 text-gray-800">Jadwal Kuliah</h1>
 
+    <!-- Jadwal Kuliah Hari Ini -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex">
             <h6 class="m-0 font-weight-bold text-primary">{{ __('Daftar Jadwal Kuliah Hari Ini') }}</h6>
@@ -17,6 +18,7 @@
                             <th>Kode Kelas/(Nama Kelas)</th>
                             <th>Prodi</th>
                             <th>Matakuliah</th>
+                            <th>Nama Mahasiswa</th>
                             <th>Ruangan</th>
                             <th>Waktu</th>
                             <th>Status Kelas</th>
@@ -31,6 +33,13 @@
                                 <td>{{ $booking->Kode_Kelas }}</td>
                                 <td>{{ $booking->prodi->nama_prodi }}</td>
                                 <td>{{ $booking->matakuliah->Nama_MK }}</td>
+                                <td>
+                                    @foreach($booking->mahasiswas->sortBy('NIM') as $mahasiswa)
+                                        <span class="badge badge-info">
+                                            {{ $loop->iteration }}. {{ $mahasiswa->NIM }} - {{ $mahasiswa->Nama }}
+                                        </span><br>
+                                    @endforeach
+                                </td>                                
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td id="status-{{ $booking->id }}">
@@ -63,6 +72,7 @@
         </div>
     </div>
 
+    <!-- Jadwal Kuliah Mendatang -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex">
             <h6 class="m-0 font-weight-bold text-primary">{{ __('Daftar Jadwal Kuliah Mendatang') }}</h6>
@@ -76,6 +86,7 @@
                             <th>Kode Kelas/(Nama Kelas)</th>
                             <th>Prodi</th>
                             <th>Matakuliah</th>
+                            <th>Nama Mahasiswa</th>
                             <th>Ruangan</th>
                             <th>Waktu</th>
                             <th>Hari</th>
@@ -91,6 +102,13 @@
                                 <td>{{ $booking->Kode_Kelas }}</td>
                                 <td>{{ $booking->prodi->nama_prodi }}</td>
                                 <td>{{ $booking->matakuliah->Nama_MK }}</td>
+                                <td>
+                                    @foreach($booking->mahasiswas->sortBy('NIM') as $mahasiswa)
+                                        <span class="badge badge-info">
+                                            {{ $loop->iteration }}. {{ $mahasiswa->NIM }} - {{ $mahasiswa->Nama }}
+                                        </span><br>
+                                    @endforeach
+                                </td>                                
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td>{{ $booking->day_of_week_text }}</td>
@@ -150,7 +168,7 @@
         });
     }
 
-    setInterval(updateClassStatus, 250);
+    setInterval(updateClassStatus, 10000);
 
     $(function () {
         $('.datatable-today-booking, .datatable-upcoming-booking').DataTable({
@@ -158,9 +176,5 @@
             pageLength: 50,
         });
     });
-
-    
 </script>
-
-
 @endpush
