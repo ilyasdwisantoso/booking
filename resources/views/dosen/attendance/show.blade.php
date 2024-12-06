@@ -20,7 +20,7 @@
                             <th>Hari</th>
                             <th>Jam</th>
                             <th>Pertemuan Ke</th>
-                            <th>Foto Database</th>
+                            <th>Foto Profile Mahasiswa</th>
                             <th>Foto Real-Time</th>
                         </tr>
                     </thead>
