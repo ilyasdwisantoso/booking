@@ -19,11 +19,13 @@ use App\Http\Controllers\Admin\{
 };
 use App\Http\Controllers\Dosen\{
     DashboardController as DosenDashboardController,
-    AttendanceController as DosenAttendanceController
+    AttendanceController as DosenAttendanceController,
+    ProfileController as DosenProfileController
 };
 use App\Http\Controllers\Mahasiswa\{
     DashboardController as MahasiswaDashboardController,
-    AttendanceController as MahasiswaAttendanceController
+    AttendanceController as MahasiswaAttendanceController,
+    ProfileController as MahasiswaProfileController
 };
 
 
@@ -90,6 +92,8 @@ Route::group(['middleware' => ['auth']], function() {
 
         Route::delete('courses/{booking}', [BookingController::class, 'hapuskelasDosen'])->name('courses.destroy');
 
+        Route::get('/profile', [DosenProfileController::class, 'show'])->name('profile.show');
+        Route::post('/profile/change-password', [DosenProfileController::class, 'changePassword'])->name('profile.changePassword');
         
     });
 
@@ -97,6 +101,14 @@ Route::group(['middleware' => ['auth']], function() {
     Route::group(['middleware' => 'isMahasiswa', 'prefix' => 'mahasiswa', 'as' => 'mahasiswa.'], function() {
         Route::get('dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard.index');
         Route::get('attendance', [MahasiswaAttendanceController::class, 'index'])->name('attendance');
+        Route::get('attendance/{booking}', [MahasiswaAttendanceController::class, 'show'])->name('attendance.show');
         Route::get('courses', [MahasiswaDashboardController::class, 'courses'])->name('courses');
+
+        // Halaman profil mahasiswa
+        Route::get('profile', [MahasiswaProfileController::class, 'show'])->name('profile.show');
+
+        // Proses ubah password mahasiswa
+        Route::post('profile/change-password', [MahasiswaProfileController::class, 'changePassword'])->name('profile.changePassword');
+
     });
 });

@@ -48,6 +48,14 @@
         </a>
     </li>
 
+     <!-- Nav Item - Profile -->
+     <li class="nav-item {{ Request::is('dosen/profile') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('dosen.profile.show') }}">
+            <i class="fas fa-fw fa-user" style="color: #2ed573;"></i>
+            <span>{{ __('Profile') }}</span>
+        </a>
+    </li>
+
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
 

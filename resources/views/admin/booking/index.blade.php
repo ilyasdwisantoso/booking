@@ -165,7 +165,7 @@
         });
     }
 
-    setInterval(updateClassStatus, 10000);
+    setInterval(updateClassStatus, 250);
 
     $(function () {
         $('.datatable-today-booking, .datatable-upcoming-booking').DataTable({

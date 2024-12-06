@@ -14,19 +14,21 @@ class UserSeedPivot extends Seeder
      */
     public function run()
     {
+        // Data relasi user dengan role
         $roles = [
-            
-            1 => [
-                'roles' => [1],
-            ],
-
+            1 => [1], // User ID 1 dengan role admin (Role ID 1)
+            21 => [2], // User ID 21 dengan role mahasiswa (Role ID 2)
+            22 => [2], // User ID 22 dengan role mahasiswa (Role ID 2)
+            25 => [2], // User ID 25 dengan role mahasiswa (Role ID 2)
+            28 => [2], // User ID 28 (Dwi Hardian) dengan role mahasiswa (Role ID 2)
         ];
 
-        foreach ($roles as $id => $role) {
-            $user = User::find($id);
+        foreach ($roles as $userId => $roleIds) {
+            $user = User::find($userId);
 
-            foreach ($role as $key => $ids) {
-                $user->{$key}()->sync($ids);
+            if ($user) {
+                // Sinkronisasi role untuk setiap user
+                $user->roles()->sync($roleIds);
             }
         }
     }

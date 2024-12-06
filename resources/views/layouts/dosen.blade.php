@@ -170,6 +170,8 @@
         });
     </script>
 
+    
+
     @stack('script-alt')
 </body>
 
