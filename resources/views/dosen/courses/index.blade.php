@@ -20,6 +20,7 @@
                             <th>Matakuliah</th>
                             <th>Nama Mahasiswa</th>
                             <th>Ruangan</th>
+                            <th>Hari</th>
                             <th>Waktu</th>
                             <th>Status Kelas</th>
                             <th>Status Ruangan</th>
@@ -41,6 +42,7 @@
                                     @endforeach
                                 </td>                                
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
+                                <td>{{ $booking->day_of_week_text }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td id="status-{{ $booking->id }}">
                                     <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
@@ -88,6 +90,7 @@
                             <th>Matakuliah</th>
                             <th>Nama Mahasiswa</th>
                             <th>Ruangan</th>
+                            <th>Hari</th>
                             <th>Waktu</th>
                             <th>Hari</th>
                             <th>Status Kelas</th>
@@ -168,7 +171,7 @@
         });
     }
 
-    setInterval(updateClassStatus, 10000);
+    setInterval(updateClassStatus, 250);
 
     $(function () {
         $('.datatable-today-booking, .datatable-upcoming-booking').DataTable({

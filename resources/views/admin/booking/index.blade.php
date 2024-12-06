@@ -5,10 +5,13 @@
 
     <!-- Jadwal Kelas Hari Ini -->
     <div class="card">
-        <div class="card-header py-3 d-flex">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">
                 {{ __('Jadwal Kelas Hari Ini') }}
             </h6>
+            <a href="{{ route('admin.booking.create') }}" class="btn btn-primary btn-sm">
+                <i class="fa fa-plus"></i> Tambah Kelas
+            </a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -19,6 +22,7 @@
                             <th>Kode Kelas/(Nama Kelas)</th>
                             <th>Prodi</th>
                             <th>Matakuliah</th>
+                            <th>Nama Mahasiswa</th>
                             <th>Dosen</th>
                             <th>Ruangan</th>
                             <th>Waktu</th>
@@ -34,6 +38,13 @@
                                 <td>{{ $booking->Kode_Kelas }}</td>
                                 <td>{{ $booking->prodi->nama_prodi }}</td>
                                 <td>{{ $booking->matakuliah->Nama_MK }}</td>
+                                <td>
+                                    @foreach($booking->mahasiswas->sortBy('NIM') as $mahasiswa)
+                                        <span class="badge badge-info">
+                                            {{ $loop->iteration }}. {{ $mahasiswa->NIM }} - {{ $mahasiswa->Nama }}
+                                        </span><br>
+                                    @endforeach
+                                </td>  
                                 <td>{{ $booking->dosen->nama_dosen }}</td>
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
@@ -76,6 +87,7 @@
             <h6 class="m-0 font-weight-bold text-primary">
                 {{ __('Jadwal Kelas Mendatang') }}
             </h6>
+            
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -86,6 +98,7 @@
                             <th>Kode Kelas/(Nama Kelas)</th>
                             <th>Prodi</th>
                             <th>Matakuliah</th>
+                            <th>Nama Mahasiswa</th>
                             <th>Dosen</th>
                             <th>Ruangan</th>
                             <th>Waktu</th>
@@ -102,6 +115,13 @@
                                 <td>{{ $booking->Kode_Kelas }}</td>
                                 <td>{{ $booking->prodi->nama_prodi }}</td>
                                 <td>{{ $booking->matakuliah->Nama_MK }}</td>
+                                <td>
+                                    @foreach($booking->mahasiswas->sortBy('NIM') as $mahasiswa)
+                                        <span class="badge badge-info">
+                                            {{ $loop->iteration }}. {{ $mahasiswa->NIM }} - {{ $mahasiswa->Nama }}
+                                        </span><br>
+                                    @endforeach
+                                </td>  
                                 <td>{{ $booking->dosen->nama_dosen }}</td>
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>

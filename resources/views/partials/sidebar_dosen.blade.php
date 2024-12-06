@@ -40,7 +40,7 @@
         <a class="nav-link" href="{{ url('/dosen/courses') }}">
             <i class="fas fa-fw fa-book" style="color: #1e90ff;"></i>
             <span>
-                {{ __('Course Schedule') }}
+                {{ __('Jadwal Perkuliahan') }}
                 @if(isset($countTodayBookings) && $countTodayBookings > 0)
                     <span class="badge badge-pill badge-danger ml-1">{{ $countTodayBookings }}</span>
                 @endif
