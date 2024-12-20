@@ -18,29 +18,20 @@ public function run()
     public function run()
     {
         $roles = [
-            [
-                'id'    => 1,
-                'title' => 'admin',
-            ],
-            [
-                'id'    => 2,
-                'title' => 'mahasiswa',
-            ],
-            [
-                'id'    => 3,
-                'title' => 'dosen',
-            ],
-            [
-                'id'    => 4,
-                'title' => 'pj',
-            ],
+            ['id' => 1, 'title' => 'admin'],
+            ['id' => 2, 'title' => 'mahasiswa'],
+            ['id' => 3, 'title' => 'dosen'],
+            ['id' => 4, 'title' => 'pj'],
         ];
 
         foreach ($roles as $role) {
             Role::updateOrCreate(
-                ['id' => $role['id']],   // Kondisi pengecekan
-                ['title' => $role['title']] // Data yang diperbarui atau ditambahkan
+                ['id' => $role['id']],
+                ['title' => $role['title']]
             );
         }
     }
 }
+
+
+
