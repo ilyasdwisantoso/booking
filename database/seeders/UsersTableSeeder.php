@@ -39,7 +39,7 @@ class UsersTableSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'dwi@gmail.com'], // Kondisi pencarian
             [
-                'name' => 'Dwi Hardian',
+                'name' => 'Dwi Santoso',
                 'password' => Hash::make('dwi123'),
             ]
         );
