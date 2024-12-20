@@ -15,29 +15,16 @@ class RoleSeed extends Seeder
     public function run()
     {
         $roles = [
-            [
-                'id'    => 1,
-                'title' => 'admin',
-            ],
-            [
-                'id'    => 2,
-                'title' => 'mahasiswa',
-            ],
-            [
-                'id'    => 3,
-                'title' => 'dosen',
-            ],
-            [
-                'id'    => 4,
-                'title' => 'pj',
-            ],
+            ['id' => 1, 'title' => 'admin'],
+            ['id' => 2, 'title' => 'mahasiswa'],
+            ['id' => 3, 'title' => 'dosen'],
+            ['id' => 4, 'title' => 'pj'],
         ];
 
-        // Tambahkan atau perbarui data jika belum ada
         foreach ($roles as $role) {
             Role::updateOrCreate(
-                ['id' => $role['id']],    // Pencarian berdasarkan ID
-                ['title' => $role['title']] // Data yang akan diperbarui atau ditambahkan
+                ['id' => $role['id']],
+                ['title' => $role['title']]
             );
         }
     }
