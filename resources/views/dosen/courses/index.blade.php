@@ -1,5 +1,5 @@
 @extends('layouts.dosen')
-@section('active-page', 'Courses Schedule')
+@section('active-page', 'Jadwal Perkuliahan')
 @section('content')
 <div class="container-fluid">
     <h1 class="h3 mb-2 text-gray-800">Jadwal Kuliah</h1>
@@ -22,6 +22,7 @@
                             <th>Ruangan</th>
                             <th>Hari</th>
                             <th>Waktu</th>
+                            <th>Kode Token Kelas(opsional)</th>
                             <th>Status Kelas</th>
                             <th>Status Ruangan</th>
                             <th>Aksi</th>
@@ -44,6 +45,7 @@
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->day_of_week_text }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
+                                <td>{{ $booking->code_token }}</td>
                                 <td id="status-{{ $booking->id }}">
                                     <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
                                         {{ $booking->status }}
@@ -92,7 +94,7 @@
                             <th>Ruangan</th>
                             <th>Hari</th>
                             <th>Waktu</th>
-                            <th>Hari</th>
+                            <th>Kode Token Kelas(opsional)</th>
                             <th>Status Kelas</th>
                             <th>Status Ruangan</th>
                             <th>Aksi</th>
@@ -115,6 +117,7 @@
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td>{{ $booking->day_of_week_text }}</td>
+                                <td>{{ $booking->code_token }}</td>
                                 <td id="status-{{ $booking->id }}">
                                     <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
                                         {{ $booking->status }}

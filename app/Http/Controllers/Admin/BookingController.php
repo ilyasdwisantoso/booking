@@ -162,7 +162,7 @@ class BookingController extends Controller
         $data['dosen_id'] = $request->input('dosen_id');
     }
 
-    $booking = Booking::create($data);
+    $booking = Booking::create($data); 
 
     // Dosen dan admin dapat menambahkan mahasiswa ke booking
     if ($request->has('mahasiswas')) {
