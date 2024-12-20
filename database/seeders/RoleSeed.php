@@ -21,10 +21,23 @@ class RoleSeed extends Seeder
             ],
             [
                 'id'    => 2,
-                'title' => 'user',
+                'title' => 'mahasiswa',
+            ],
+            [
+                'id'    => 3,
+                'title' => 'dosen',
+            ],
+            [
+                'id'    => 4,
+                'title' => 'pj',
             ],
         ];
 
-        Role::insert($roles);
+        foreach ($roles as $role) {
+            Role::updateOrCreate(
+                ['id' => $role['id']],  // Kondisi pengecekan
+                ['title' => $role['title']] // Data yang akan diperbarui atau ditambahkan
+            );
+        }
     }
 }
