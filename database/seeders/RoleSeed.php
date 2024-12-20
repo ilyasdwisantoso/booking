@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use Illuminate\Database\Seeder;
+use App\Models\Role;
 
 class RoleSeed extends Seeder
 {
@@ -35,8 +35,8 @@ class RoleSeed extends Seeder
 
         foreach ($roles as $role) {
             Role::updateOrCreate(
-                ['id' => $role['id']],  // Kondisi pengecekan
-                ['title' => $role['title']] // Data yang akan diperbarui atau ditambahkan
+                ['id' => $role['id']],   // Kondisi pengecekan
+                ['title' => $role['title']] // Data yang diperbarui atau ditambahkan
             );
         }
     }
