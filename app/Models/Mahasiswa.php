@@ -24,10 +24,12 @@ class Mahasiswa extends Model
         'user_id'
     ];
     
-    public function bookings()
-    {
-        return $this->belongsToMany(Booking::class, 'classmahasiswa', 'mahasiswas_NIM', 'booking_id', 'NIM', 'id');
-    }
+    // Mahasiswa.php
+public function bookings()
+{
+    return $this->belongsToMany(Booking::class, 'classmahasiswa', 'mahasiswas_NIM', 'booking_id', 'NIM', 'id');
+}
+
 
     public function attandances(){
         return $this->hasMany(Attendance::class);

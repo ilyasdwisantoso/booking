@@ -31,7 +31,7 @@ class DashboardController extends Controller
     // Dapatkan mahasiswa yang sedang login
     $mahasiswa = Mahasiswa::where('user_id', Auth::id())->first();
 
-    // Jika mahasiswa tidak ditemukan, kembalikan error
+    // Cek jika data mahasiswa tidak ditemukan
     if (!$mahasiswa) {
         return redirect()->route('mahasiswa.dashboard.index')->with([
             'message' => 'Data mahasiswa tidak ditemukan!',
@@ -39,19 +39,24 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Dapatkan daftar kuliah hari ini
+    // Daftar kuliah hari ini
     $todayBookings = $mahasiswa->bookings()
         ->where('day_of_week', now()->dayOfWeek)
-        ->whereTime('start_time', '<=', now()->format('H:i:s'))
-        ->whereTime('end_time', '>=', now()->format('H:i:s'))
+        ->where(function ($query) {
+            $query->whereTime('start_time', '<=', now()->format('H:i:s'))
+                  ->whereTime('end_time', '>=', now()->format('H:i:s'));
+        })
+        ->orderBy('start_time')
         ->get();
 
-    // Dapatkan daftar kuliah mendatang
+    // Daftar kuliah mendatang
     $upcomingBookings = $mahasiswa->bookings()
-        ->where('day_of_week', '>', now()->dayOfWeek)
-        ->orWhere(function ($query) {
-            $query->where('day_of_week', now()->dayOfWeek)
-                  ->whereTime('start_time', '>', now()->format('H:i:s'));
+        ->where(function ($query) {
+            $query->where('day_of_week', '>', now()->dayOfWeek)
+                  ->orWhere(function ($subQuery) {
+                      $subQuery->where('day_of_week', now()->dayOfWeek)
+                               ->whereTime('start_time', '>', now()->format('H:i:s'));
+                  });
         })
         ->orderBy('day_of_week')
         ->orderBy('start_time')
@@ -59,5 +64,6 @@ class DashboardController extends Controller
 
     return view('mahasiswa.courses.index', compact('todayBookings', 'upcomingBookings'));
 }
+
 
 }
