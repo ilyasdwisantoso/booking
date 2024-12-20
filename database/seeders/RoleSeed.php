@@ -5,8 +5,11 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Role;
 
-class RoleSeed extends Seeder
+public function run()
 {
+    Role::firstOrCreate(['id' => 1], ['title' => 'admin']);
+    Role::firstOrCreate(['id' => 2], ['title' => 'user']);
+
     /**
      * Run the database seeds.
      *
