@@ -1,30 +1,9 @@
 <?php
 
-namespace Database\Seeders;
-
 use App\Models\Role;
-use Illuminate\Database\Seeder;
 
-class RoleSeed extends Seeder
+public function run()
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
-    {
-        $roles = [
-            [
-                'id'    => 1,
-                'title' => 'admin',
-            ],
-            [
-                'id'    => 2,
-                'title' => 'user',
-            ],
-        ];
-
-        Role::insert($roles);
-    }
+    Role::firstOrCreate(['id' => 1], ['title' => 'admin']);
+    Role::firstOrCreate(['id' => 2], ['title' => 'user']);
 }
