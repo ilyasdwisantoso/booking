@@ -33,10 +33,11 @@ class RoleSeed extends Seeder
             ],
         ];
 
+        // Tambahkan atau perbarui data jika belum ada
         foreach ($roles as $role) {
             Role::updateOrCreate(
-                ['id' => $role['id']],   // Kondisi pengecekan
-                ['title' => $role['title']] // Data yang diperbarui atau ditambahkan
+                ['id' => $role['id']],    // Pencarian berdasarkan ID
+                ['title' => $role['title']] // Data yang akan diperbarui atau ditambahkan
             );
         }
     }
