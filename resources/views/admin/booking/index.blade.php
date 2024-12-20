@@ -26,6 +26,7 @@
                             <th>Dosen</th>
                             <th>Ruangan</th>
                             <th>Waktu</th>
+                            <th>Kode Token Kelas</th>
                             <th>Status Kelas</th>
                             <th>Status Ruangan</th>
                             <th>Action</th>
@@ -48,6 +49,7 @@
                                 <td>{{ $booking->dosen->nama_dosen }}</td>
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
+                                <td>{{ $booking->code_token }}</td>
                                 <td id="status-{{ $booking->id }}">
                                     <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
                                         {{ $booking->status }}
@@ -103,6 +105,7 @@
                             <th>Ruangan</th>
                             <th>Waktu</th>
                             <th>Hari</th>
+                            <th>Kode Token Kelas</th>
                             <th>Status Kelas</th>
                             <th>Status Ruangan</th>
                             <th>Action</th>
@@ -126,6 +129,7 @@
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td>{{ $booking->day_of_week_text }}</td>
+                                <td>{{ $booking->code_token }}</td>
                                 <td id="status-{{ $booking->id }}">
                                     <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
                                         {{ $booking->status }}
