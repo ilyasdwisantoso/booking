@@ -30,7 +30,3 @@ Route::post('/access/verify', [AccessControlController::class, 'verifyAccess']);
 
 
 
-
-Route::put('/photo', [MahasiswaController::class, 'update']);
-Route::post('/qr_code', [QRCodeController::class, 'store']);
-Route::post('/attendance/mark', [AttendanceController::class, 'markAttendance']);

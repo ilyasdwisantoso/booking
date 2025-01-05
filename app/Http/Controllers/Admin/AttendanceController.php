@@ -125,31 +125,49 @@ class AttendanceController extends Controller
 }
 
 
-    public function uploadPhoto(Request $request)
-    {
-        // Verifikasi attendance_id
-        $attendanceId = $request->input('attendance_id');
-        $attendance = Attendance::find($attendanceId);
-
-        if (!$attendance) {
-            return response()->json(['error' => 'Invalid attendance ID'], 404);
-        }
-
-        // Cek apakah ada file gambar yang diupload
-        if ($request->hasFile('photo')) { // Ubah 'file' menjadi 'photo'
-            $file = $request->file('photo'); // Ubah 'file' menjadi 'photo'
-            $photo_ekstensi = $file->extension();
-            $photo_nama = date('ymdhis') . '.' . $photo_ekstensi;
-            $file->move(public_path('photo'), $photo_nama);
-
-            $attendance->photo = $photo_nama;
-            $attendance->save();
-
-            return response()->json(['success' => 'Photo uploaded successfully'], 200);
-        } else {
-            return response()->json(['error' => 'No file uploaded'], 400);
-        }
+public function uploadPhoto(Request $request)
+{
+    // Validasi apakah attendance_id ada di request
+    $attendanceId = $request->input('attendance_id');
+    if (!$attendanceId) {
+        return response()->json(['error' => 'Attendance ID is required'], 400);
     }
+
+    // Cari attendance berdasarkan ID
+    $attendance = Attendance::find($attendanceId);
+    if (!$attendance) {
+        return response()->json(['error' => 'Invalid attendance ID'], 404);
+    }
+
+    // Ambil file foto langsung dari request
+    $file = $request->file('photo');
+
+    // Validasi file upload
+    if (!$file) {
+        return response()->json(['error' => 'No photo uploaded'], 400);
+    }
+
+    $validated = $request->validate([
+        'photo' => 'image|mimes:jpeg,jpg,png|max:2048', // Maksimum 2 MB
+    ]);
+
+    // Ambil ekstensi file dan buat nama file baru
+    $photoExtension = $file->extension();
+    $photoName = 'attendance_' . $attendanceId . '_' . time() . '.' . $photoExtension;
+
+    // Pindahkan file ke folder 'public/photo'
+    $file->move(public_path('photo'), $photoName);
+
+    // Update nama file di database
+    $attendance->photo = $photoName;
+    $attendance->save();
+
+    return response()->json([
+        'success' => 'Photo uploaded successfully',
+        'photo_url' => url('photo/' . $photoName),
+    ], 200);
+}
+
 
     
     
