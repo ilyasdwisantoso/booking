@@ -150,8 +150,17 @@ public function uploadPhoto(Request $request)
 
     // Cari data presensi berdasarkan attendance_id
     $attendance = Attendance::find($attendanceId);
+
     if (!$attendance) {
         return response()->json(['error' => 'Invalid attendance ID'], 404);
+    }
+
+    // Cek apakah foto sudah ada sebelumnya
+    if ($attendance->photo) {
+        return response()->json([
+            'error' => 'Photo already uploaded for this attendance ID',
+            'photo_url' => url('photo/' . $attendance->photo),
+        ], 400); // 400 Bad Request
     }
 
     // Buat nama file unik untuk foto
@@ -162,7 +171,7 @@ public function uploadPhoto(Request $request)
     try {
         $file->move(public_path('photo'), $photoName);
     } catch (\Exception $e) {
-        return response()->json(['error' => 'Failed to upload photo: ' . $e->getMessage()], 500);
+        return response()->json(['error' => 'Failed to upload photo: ' . $e->getMessage()], 500); // 500 Internal Server Error
     }
 
     // Update nama file di database
@@ -173,8 +182,9 @@ public function uploadPhoto(Request $request)
     return response()->json([
         'success' => 'Photo uploaded successfully',
         'photo_url' => url('photo/' . $photoName),
-    ], 200);
+    ], 200); // 200 OK
 }
+
 
     
     
