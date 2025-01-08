@@ -66,26 +66,18 @@ class AttendanceController extends Controller
      */
     public function verifyStudent(Request $request)
 {
-    // Validasi input QR Code
-    $validatedData = $request->validate([
-        'qr_code' => 'required|string',
-    ]);
-
-    $qrCode = $validatedData['qr_code'];
-
-    // Cari mahasiswa berdasarkan QR Code
+    $qrCode = $request->input('qr_code');
     $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
 
     if (!$mahasiswa) {
         return response()->json(['error' => 'Invalid QR Code'], 404);
     }
 
-    // Ambil waktu sekarang dengan zona waktu lokal
-    $currentDateTime = Carbon::now('Asia/Jakarta');
-    $dayOfWeek = $currentDateTime->dayOfWeek; // Mendapatkan hari dalam bentuk integer (0=Sunday, 6=Saturday)
-    $currentTime = $currentDateTime->toTimeString(); // Format H:i:s
+    $currentDateTime = Carbon::now();
+    $dayOfWeek = $currentDateTime->format('w');
+    $currentTime = $currentDateTime->format('H:i:s');
 
-    // Cari jadwal kelas yang sesuai dengan waktu dan mahasiswa
+    // Cek apakah mahasiswa terdaftar pada kelas yang sesuai dengan waktu saat ini
     $classSchedule = Booking::where('day_of_week', $dayOfWeek)
         ->where('start_time', '<=', $currentTime)
         ->where('end_time', '>=', $currentTime)
@@ -109,7 +101,7 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'Already attended'], 400);
     }
 
-    // Hitung "Pertemuan ke" berdasarkan jumlah presensi sebelumnya
+    // Tentukan "Pertemuan ke" berdasarkan jumlah presensi sebelumnya
     $lastAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
         ->where('booking_id', $classSchedule->id)
         ->orderBy('pertemuan_ke', 'desc')
@@ -117,23 +109,22 @@ class AttendanceController extends Controller
 
     $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
 
-    // Catat presensi baru dengan transaksi untuk menghindari konflik data
-    $attendance = DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
-        return Attendance::create([
-            'mahasiswas_NIM' => $mahasiswa->NIM,
-            'booking_id' => $classSchedule->id,
-            'attended_at' => $currentDateTime,
-            'pertemuan_ke' => $pertemuanKe,
-        ]);
-    });
+    // Catat presensi baru
+    $attendance = Attendance::create([
+        'mahasiswas_NIM' => $mahasiswa->NIM,
+        'booking_id' => $classSchedule->id,
+        'attended_at' => $currentDateTime,
+        'pertemuan_ke' => $pertemuanKe,
+    ]);
 
-    // Kembalikan respons JSON
     return response()->json([
         'message' => 'Attendance marked successfully',
-        'attendance_id' => $attendance->id, // Pastikan ID ini integer
+        'attendance_id' => $attendance->id,
         'pertemuan_ke' => $attendance->pertemuan_ke,
     ], 200);
 }
+
+
 
 public function uploadPhoto(Request $request)
 {
