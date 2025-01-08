@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Mahasiswa;
 use App\Models\Attendance;
@@ -66,22 +67,30 @@ class AttendanceController extends Controller
      */
     public function verifyStudent(Request $request)
 {
-    $qrCode = $request->input('qr_code');
+    // Validasi input
+    $validatedData = $request->validate([
+        'qr_code' => 'required|string',
+    ]);
+
+    $qrCode = $validatedData['qr_code'];
+
+    // Cari mahasiswa berdasarkan QR Code
     $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
 
     if (!$mahasiswa) {
         return response()->json(['error' => 'Invalid QR Code'], 404);
     }
 
-    $currentDateTime = Carbon::now();
-    $dayOfWeek = $currentDateTime->format('w');
-    $currentTime = $currentDateTime->format('H:i:s');
+    // Ambil waktu sekarang dengan zona waktu lokal
+    $currentDateTime = Carbon::now('Asia/Jakarta');
+    $dayOfWeek = $currentDateTime->dayOfWeek;
+    $currentTime = $currentDateTime->toTimeString();
 
-    // Cek apakah mahasiswa terdaftar pada kelas yang sesuai dengan waktu saat ini
+    // Cari jadwal kelas
     $classSchedule = Booking::where('day_of_week', $dayOfWeek)
         ->where('start_time', '<=', $currentTime)
         ->where('end_time', '>=', $currentTime)
-        ->where('room_status', 'open') // Pastikan ruangan sudah "open"
+        ->where('room_status', 'open')
         ->whereHas('mahasiswas', function ($query) use ($mahasiswa) {
             $query->where('mahasiswas_NIM', $mahasiswa->NIM);
         })
@@ -91,17 +100,17 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'No active class for this schedule or room not opened'], 404);
     }
 
-    // Cek apakah mahasiswa sudah presensi untuk kelas ini pada hari ini
-    $existingAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
+    // Cek presensi
+    $alreadyAttended = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
         ->where('booking_id', $classSchedule->id)
         ->whereDate('attended_at', $currentDateTime->toDateString())
-        ->first();
+        ->exists();
 
-    if ($existingAttendance) {
+    if ($alreadyAttended) {
         return response()->json(['error' => 'Already attended'], 400);
     }
 
-    // Tentukan "Pertemuan ke" berdasarkan jumlah presensi sebelumnya
+    // Hitung pertemuan ke
     $lastAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
         ->where('booking_id', $classSchedule->id)
         ->orderBy('pertemuan_ke', 'desc')
@@ -110,12 +119,14 @@ class AttendanceController extends Controller
     $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
 
     // Catat presensi baru
-    $attendance = Attendance::create([
-        'mahasiswas_NIM' => $mahasiswa->NIM,
-        'booking_id' => $classSchedule->id,
-        'attended_at' => $currentDateTime,
-        'pertemuan_ke' => $pertemuanKe,
-    ]);
+    $attendance = DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
+        return Attendance::create([
+            'mahasiswas_NIM' => $mahasiswa->NIM,
+            'booking_id' => $classSchedule->id,
+            'attended_at' => $currentDateTime,
+            'pertemuan_ke' => $pertemuanKe,
+        ]);
+    });
 
     return response()->json([
         'message' => 'Attendance marked successfully',
