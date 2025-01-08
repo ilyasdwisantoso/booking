@@ -85,7 +85,7 @@ class AttendanceController extends Controller
     $dayOfWeek = $currentDateTime->dayOfWeek; // Mendapatkan hari dalam bentuk integer (0=Sunday, 6=Saturday)
     $currentTime = $currentDateTime->toTimeString(); // Format H:i:s
 
-    // Cari jadwal kelas yang sesuai dengan waktu dan mahasiswa
+    // Cari jadwal kelas yang sesuai dengan waktu, hari, dan mahasiswa
     $classSchedule = Booking::where('day_of_week', $dayOfWeek)
         ->where('start_time', '<=', $currentTime)
         ->where('end_time', '>=', $currentTime)
@@ -103,7 +103,7 @@ class AttendanceController extends Controller
     $existingAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
         ->where('booking_id', $classSchedule->id)
         ->whereDate('attended_at', $currentDateTime->toDateString())
-        ->first();
+        ->exists();
 
     if ($existingAttendance) {
         return response()->json(['error' => 'Already attended'], 400);
@@ -118,21 +118,26 @@ class AttendanceController extends Controller
     $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
 
     // Catat presensi baru dengan transaksi untuk menghindari konflik data
-    $attendance = DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
-        return Attendance::create([
-            'mahasiswas_NIM' => $mahasiswa->NIM,
-            'booking_id' => $classSchedule->id,
-            'attended_at' => $currentDateTime,
-            'pertemuan_ke' => $pertemuanKe,
-        ]);
-    });
+    try {
+        $attendance = DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
+            return Attendance::create([
+                'mahasiswas_NIM' => $mahasiswa->NIM,
+                'booking_id' => $classSchedule->id,
+                'attended_at' => $currentDateTime,
+                'pertemuan_ke' => $pertemuanKe,
+            ]);
+        });
 
-    // Kembalikan respons JSON
-    return response()->json([
-        'message' => 'Attendance marked successfully',
-        'attendance_id' => $attendance->id, // Pastikan ID ini integer
-        'pertemuan_ke' => $attendance->pertemuan_ke,
-    ], 200);
+        // Kembalikan respons JSON
+        return response()->json([
+            'message' => 'Attendance marked successfully',
+            'attendance_id' => $attendance->id, // ID presensi yang baru dibuat
+            'pertemuan_ke' => $attendance->pertemuan_ke,
+        ], 200);
+    } catch (\Exception $e) {
+        // Handle error jika ada masalah saat menyimpan ke database
+        return response()->json(['error' => 'Failed to mark attendance: ' . $e->getMessage()], 500);
+    }
 }
 
 
