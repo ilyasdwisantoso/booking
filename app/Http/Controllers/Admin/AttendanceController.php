@@ -66,18 +66,26 @@ class AttendanceController extends Controller
      */
     public function verifyStudent(Request $request)
 {
-    $qrCode = $request->input('qr_code');
+    // Validasi input QR Code
+    $validatedData = $request->validate([
+        'qr_code' => 'required|string',
+    ]);
+
+    $qrCode = $validatedData['qr_code'];
+
+    // Cari mahasiswa berdasarkan QR Code
     $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
 
     if (!$mahasiswa) {
         return response()->json(['error' => 'Invalid QR Code'], 404);
     }
 
-    $currentDateTime = Carbon::now();
-    $dayOfWeek = $currentDateTime->format('w');
-    $currentTime = $currentDateTime->format('H:i:s');
+    // Ambil waktu sekarang dengan zona waktu lokal
+    $currentDateTime = Carbon::now('Asia/Jakarta');
+    $dayOfWeek = $currentDateTime->dayOfWeek; // Mendapatkan hari dalam bentuk integer (0=Sunday, 6=Saturday)
+    $currentTime = $currentDateTime->toTimeString(); // Format H:i:s
 
-    // Cek apakah mahasiswa terdaftar pada kelas yang sesuai dengan waktu saat ini
+    // Cari jadwal kelas yang sesuai dengan waktu dan mahasiswa
     $classSchedule = Booking::where('day_of_week', $dayOfWeek)
         ->where('start_time', '<=', $currentTime)
         ->where('end_time', '>=', $currentTime)
@@ -101,7 +109,7 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'Already attended'], 400);
     }
 
-    // Tentukan "Pertemuan ke" berdasarkan jumlah presensi sebelumnya
+    // Hitung "Pertemuan ke" berdasarkan jumlah presensi sebelumnya
     $lastAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
         ->where('booking_id', $classSchedule->id)
         ->orderBy('pertemuan_ke', 'desc')
@@ -109,17 +117,20 @@ class AttendanceController extends Controller
 
     $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
 
-    // Catat presensi baru
-    $attendance = Attendance::create([
-        'mahasiswas_NIM' => $mahasiswa->NIM,
-        'booking_id' => $classSchedule->id,
-        'attended_at' => $currentDateTime,
-        'pertemuan_ke' => $pertemuanKe,
-    ]);
+    // Catat presensi baru dengan transaksi untuk menghindari konflik data
+    $attendance = DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
+        return Attendance::create([
+            'mahasiswas_NIM' => $mahasiswa->NIM,
+            'booking_id' => $classSchedule->id,
+            'attended_at' => $currentDateTime,
+            'pertemuan_ke' => $pertemuanKe,
+        ]);
+    });
 
+    // Kembalikan respons JSON
     return response()->json([
         'message' => 'Attendance marked successfully',
-        'attendance_id' => $attendance->id,
+        'attendance_id' => $attendance->id, // Pastikan ID ini integer
         'pertemuan_ke' => $attendance->pertemuan_ke,
     ], 200);
 }
@@ -127,47 +138,43 @@ class AttendanceController extends Controller
 
 public function uploadPhoto(Request $request)
 {
-    // Validasi apakah attendance_id ada di request
-    $attendanceId = $request->input('attendance_id');
-    if (!$attendanceId) {
-        return response()->json(['error' => 'Attendance ID is required'], 400);
-    }
+    // Validasi input
+    $validatedData = $request->validate([
+        'attendance_id' => 'required|integer|exists:attendances,id',
+        'photo' => 'required|image|mimes:jpeg,jpg,png|max:2048', // Maksimum 2MB
+    ]);
 
-    // Cari attendance berdasarkan ID
+    // Ambil attendance_id dan file foto dari input
+    $attendanceId = $validatedData['attendance_id'];
+    $file = $request->file('photo');
+
+    // Cari data presensi berdasarkan attendance_id
     $attendance = Attendance::find($attendanceId);
     if (!$attendance) {
         return response()->json(['error' => 'Invalid attendance ID'], 404);
     }
 
-    // Ambil file foto langsung dari request
-    $file = $request->file('photo');
-
-    // Validasi file upload
-    if (!$file) {
-        return response()->json(['error' => 'No photo uploaded'], 400);
-    }
-
-    $validated = $request->validate([
-        'photo' => 'image|mimes:jpeg,jpg,png|max:2048', // Maksimum 2 MB
-    ]);
-
-    // Ambil ekstensi file dan buat nama file baru
-    $photoExtension = $file->extension();
+    // Buat nama file unik untuk foto
+    $photoExtension = $file->getClientOriginalExtension();
     $photoName = 'attendance_' . $attendanceId . '_' . time() . '.' . $photoExtension;
 
-    // Pindahkan file ke folder 'public/photo'
-    $file->move(public_path('photo'), $photoName);
+    // Simpan foto ke folder 'public/photo'
+    try {
+        $file->move(public_path('photo'), $photoName);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to upload photo: ' . $e->getMessage()], 500);
+    }
 
     // Update nama file di database
     $attendance->photo = $photoName;
     $attendance->save();
 
+    // Kembalikan response JSON dengan URL foto yang berhasil diupload
     return response()->json([
         'success' => 'Photo uploaded successfully',
         'photo_url' => url('photo/' . $photoName),
     ], 200);
 }
-
 
     
     
