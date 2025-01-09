@@ -83,7 +83,7 @@
                                 <td>{{ $attendance->booking->matakuliah->Nama_MK }}</td>
                                 <td>{{ $attendance->pertemuan_ke }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('Y-m-d') }}</td>
-                                <td>{{ $attendance->booking->day_of_week_text }}</td>
+                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->translatedFormat('l') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('H:i:s') }}</td>
                                 <td>
                                     @if ($attendance->mahasiswas->photo)
