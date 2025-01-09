@@ -28,5 +28,7 @@ Route::post('/attendance/verify-student', [AttendanceController::class, 'verifyS
 Route::post('/upload-photo', [AttendanceController::class, 'uploadPhoto']);
 Route::post('/access/verify', [AccessControlController::class, 'verifyAccess']);
 
+Route::get('/realtime-attendances', [AttendanceController::class, 'getRealtimeAttendances']);
+
 
 

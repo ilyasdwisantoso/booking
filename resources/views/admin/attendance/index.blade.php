@@ -54,7 +54,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover datatable datatable-attendance-records" width="100%">
+                <table class="table table-bordered table-striped table-hover datatable-attendance-records" width="100%">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -73,39 +73,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($attendances as $attendance)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $attendance->mahasiswas->Nama }}</td>
-                                <td>{{ $attendance->mahasiswas->NIM }}</td>
-                                <td>{{ $attendance->booking->Kode_Kelas }}</td>
-                                <td>{{ $attendance->booking->dosen->nama_dosen }}</td>
-                                <td>{{ $attendance->booking->matakuliah->Nama_MK }}</td>
-                                <td>{{ $attendance->pertemuan_ke }}</td>
-                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('Y-m-d') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->translatedFormat('l') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('H:i:s') }}</td>
-                                <td>
-                                    @if ($attendance->mahasiswas->photo)
-                                        <img src="{{ url('photo').'/'.$attendance->mahasiswas->photo }}" alt="Database Photo" style="max-width:250px;max-height:250px">
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($attendance->photo)
-                                    <img src="{{ url('photo').'/'.$attendance->photo }}" alt="Database Photo" style="max-width:250px;max-height:250px">
-                                @endif
-                                </td>
-                                <td>
-                                    <form onclick="return confirm('Apakah Anda yakin ingin menghapus?')" class="d-inline" action="{{ route('admin.attendance.destroy', $attendance->id) }}" method="POST">
-                                        @csrf
-                                        @method('delete')
-                                        <button class="btn btn-danger">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
+                        <!-- Data will be populated by AJAX -->
                     </tbody>
                 </table>
             </div>
@@ -113,7 +81,6 @@
     </div>
 </div>
 @endsection
-
 
 @push('script-alt')
 <script>
@@ -127,41 +94,80 @@
     // Panggil updateClock setiap detik (1000ms)
     setInterval(updateClock, 1000);
 
-    // Initialize DataTables
-    $(function () {
-        let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons);
-        let deleteButtonTrans = 'Hapus yang dipilih';
-        let deleteButton = {
-            text: deleteButtonTrans,
-            url: "{{ route('dosen.attendance.mass_destroy') }}",
-            className: 'btn-danger',
-            action: function (e, dt, node, config) {
-                var ids = $.map(dt.rows({ selected: true }).nodes(), function (entry) {
-                    return $(entry).data('entry-id');
+    // Fungsi untuk memuat data Catatan Kehadiran secara real-time
+    function fetchRealtimeAttendances() {
+        $.ajax({
+            url: "{{ url('/api/realtime-attendances') }}",
+            method: "GET",
+            success: function(data) {
+                let tableBody = '';
+                data.forEach((attendance, index) => {
+                    tableBody += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${attendance.mahasiswas.Nama}</td>
+                            <td>${attendance.mahasiswas.NIM}</td>
+                            <td>${attendance.booking.Kode_Kelas}</td>
+                            <td>${attendance.booking.dosen ? attendance.booking.dosen.nama_dosen : ''}</td>
+                            <td>${attendance.booking.matakuliah ? attendance.booking.matakuliah.Nama_MK : ''}</td>
+                            <td>${attendance.pertemuan_ke}</td>
+                            <td>${new Date(attendance.attended_at).toLocaleDateString('id-ID')}</td>
+                            <td>${new Date(attendance.attended_at).toLocaleDateString('id-ID', { weekday: 'long' })}</td>
+                            <td>${new Date(attendance.attended_at).toLocaleTimeString('id-ID')}</td>
+                            <td>
+                                ${attendance.mahasiswas.photo ? 
+                                    `<img src="{{ url('photo') }}/${attendance.mahasiswas.photo}" alt="Database Photo" style="max-width:250px;max-height:250px">`
+                                    : ''}
+                            </td>
+                            <td>
+                                ${attendance.photo ? 
+                                    `<img src="{{ url('photo') }}/${attendance.photo}" alt="Real-Time Photo" style="max-width:250px;max-height:250px">`
+                                    : ''}
+                            </td>
+                            <td>
+                                <form onclick="return confirm('Apakah Anda yakin ingin menghapus?')" class="d-inline" action="{{ url('admin/attendance/destroy') }}/${attendance.id}" method="POST">
+                                    @csrf
+                                    @method('delete')
+                                    <button class="btn btn-danger">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>`;
                 });
-                if (ids.length === 0) {
-                    alert('Tidak ada yang dipilih');
-                    return;
-                }
-                if (confirm('Anda yakin?')) {
-                    $.ajax({
-                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                        method: 'POST',
-                        url: config.url,
-                        data: { ids: ids, _method: 'DELETE' }
-                    }).done(function () { location.reload() });
-                }
+
+                $('.datatable-attendance-records tbody').html(tableBody);
+
+                // Reinitialize DataTables (optional, if you want sorting/pagination)
+                $('.datatable-attendance-records').DataTable().destroy();
+                $('.datatable-attendance-records').DataTable({
+                    order: [[ 0, 'asc' ]],
+                    pageLength: 50,
+                });
+            },
+            error: function(xhr) {
+                console.error('Error fetching data:', xhr);
             }
-        };
-        dtButtons.push(deleteButton);
-        $.extend(true, $.fn.dataTable.defaults, {
-            order: [[ 1, 'asc' ]],
+        });
+    }
+
+    // Panggil fungsi fetchRealtimeAttendances setiap 5 detik
+    setInterval(fetchRealtimeAttendances, 5000);
+
+    // Panggilan pertama kali saat halaman di-load
+    fetchRealtimeAttendances();
+
+    // Initialize DataTables for the first time
+    $(document).ready(function() {
+        $('.datatable-attendance').DataTable({
+            order: [[ 0, 'asc' ]],
             pageLength: 50,
         });
-        $('.datatable-attendance:not(.ajaxTable)').DataTable({ buttons: dtButtons });
-        $('.datatable-attendance-records:not(.ajaxTable)').DataTable({ buttons: dtButtons });
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+
+        // Initialize empty DataTable for attendance records
+        $('.datatable-attendance-records').DataTable({
+            order: [[ 0, 'asc' ]],
+            pageLength: 50,
         });
     });
 </script>

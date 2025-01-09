@@ -263,4 +263,15 @@ public function uploadPhoto(Request $request)
 
         return response()->noContent();
     }
+
+
+    public function getRealtimeAttendances(Request $request)
+{
+    $attendances = Attendance::with(['mahasiswas', 'booking'])
+        ->orderBy('attended_at', 'desc') // Urutkan berdasarkan waktu terbaru
+        ->get();
+
+    return response()->json($attendances);
+}
+
 }
