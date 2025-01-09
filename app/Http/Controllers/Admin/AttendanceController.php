@@ -21,34 +21,41 @@ class AttendanceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        $attendances = Attendance::with(['mahasiswas', 'booking'])->get();
+{
+    $attendances = Attendance::with(['mahasiswas', 'booking', 'booking.dosen', 'booking.matakuliah'])
+        ->orderBy('attended_at', 'desc')
+        ->get();
 
-        $attendanceData = [];
+    $attendanceData = [];
 
-        foreach ($attendances as $attendance) {
-            $student = $attendance->mahasiswas;
-            $booking = $attendance->booking;
-            
-            // Menghitung jumlah kehadiran mahasiswa pada booking tertentu
-            $attendanceCount = Attendance::where('mahasiswas_NIM', $student->NIM)
-                ->where('booking_id', $booking->id)
-                ->count();
+    foreach ($attendances as $attendance) {
+        $student = $attendance->mahasiswas;
+        $booking = $attendance->booking;
 
-            // Menghitung jumlah total pertemuan dari booking
-            $totalMeetings = $booking->jumlah_pertemuan;
-            $attendancePercentage = ($totalMeetings > 0) ? ($attendanceCount / $totalMeetings) * 100 : 0;
-
-            $attendanceData[] = [
-                'student' => $student,
-                'booking' => $booking,
-                'attendanceCount' => $attendanceCount,
-                'attendancePercentage' => $attendancePercentage,
-            ];
+        if (!$student || !$booking) {
+            continue; // Skip jika data tidak lengkap
         }
 
-        return view('admin.attendance.index', compact('attendanceData', 'attendances')); 
+        // Menghitung jumlah kehadiran mahasiswa pada booking tertentu
+        $attendanceCount = Attendance::where('mahasiswas_NIM', $student->NIM)
+            ->where('booking_id', $booking->id)
+            ->count();
+
+        // Menghitung jumlah total pertemuan dari booking
+        $totalMeetings = $booking->jumlah_pertemuan;
+        $attendancePercentage = ($totalMeetings > 0) ? ($attendanceCount / $totalMeetings) * 100 : 0;
+
+        $attendanceData[] = [
+            'student' => $student,
+            'booking' => $booking,
+            'attendanceCount' => $attendanceCount,
+            'attendancePercentage' => $attendancePercentage,
+        ];
     }
+
+    return view('admin.attendance.index', compact('attendanceData', 'attendances'));
+}
+
     /**
      * Show the form for creating a new resource.
      *
@@ -265,13 +272,14 @@ public function uploadPhoto(Request $request)
     }
 
 
-    public function getRealtimeAttendances(Request $request)
+    public function getRealtimeAttendances()
 {
-    $attendances = Attendance::with(['mahasiswas', 'booking'])
-        ->orderBy('attended_at', 'desc') // Urutkan berdasarkan waktu terbaru
+    $attendances = Attendance::with(['mahasiswas', 'booking', 'booking.dosen', 'booking.matakuliah'])
+        ->orderBy('attended_at', 'desc')
         ->get();
 
     return response()->json($attendances);
 }
+
 
 }
