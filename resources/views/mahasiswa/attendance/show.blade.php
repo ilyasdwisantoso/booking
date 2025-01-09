@@ -20,8 +20,8 @@
                             <th>Tanggal</th>
                             <th>Hari</th>
                             <th>Jam</th>
-                            <th>Foto Database</th>
-                            <th>Foto Real-Time</th>
+                            <th>Foto Profile Mahasiswa</th>
+                            <th>Foto Camera</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -31,7 +31,7 @@
                                 <td>{{ $attendance->mahasiswas->Nama }}</td>
                                 <td>{{ $attendance->mahasiswas->NIM }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('Y-m-d') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('l') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->translatedFormat('l') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('H:i:s') }}</td>
                                 <td>
                                     @if ($attendance->mahasiswas->photo)

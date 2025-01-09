@@ -21,7 +21,7 @@
                             <th>Jam</th>
                             <th>Pertemuan Ke</th>
                             <th>Foto Profile Mahasiswa</th>
-                            <th>Foto Real-Time</th>
+                            <th>Foto Camera</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -32,7 +32,7 @@
                                 <td>{{ $attendance->mahasiswas->NIM }}</td>
                                 <td>{{ $booking->Kode_Kelas }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('Y-m-d') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('l') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->translatedFormat('l') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($attendance->attended_at)->format('H:i:s') }}</td>
                                 <td>{{ $attendance->pertemuan_ke }}</td>
                                 <td>
