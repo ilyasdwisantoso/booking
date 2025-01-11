@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::post('/attendance/verify-student', [AttendanceController::class, 'verifyStudent']);
-Route::post('/upload-photo', [AttendanceController::class, 'uploadPhoto']);
+Route::post('/attendance/upload-photo', [AttendanceController::class, 'uploadPhoto']);
 Route::post('/access/verify', [AccessControlController::class, 'verifyAccess']);
 
 Route::get('/realtime-attendances', [AttendanceController::class, 'getRealtimeAttendances']);
