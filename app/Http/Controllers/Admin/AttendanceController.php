@@ -73,74 +73,74 @@ class AttendanceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function verifyStudent(Request $request)
-{
-    // Validasi input
-    $validatedData = $request->validate([
-        'qr_code' => 'required|string',
-    ]);
-
-    $qrCode = $validatedData['qr_code'];
-
-    // Cari mahasiswa berdasarkan QR Code
-    $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
-
-    if (!$mahasiswa) {
-        return response()->json(['error' => 'Invalid QR Code'], 404);
-    }
-
-    // Ambil waktu sekarang dengan zona waktu lokal
-    $currentDateTime = Carbon::now('Asia/Jakarta');
-    $dayOfWeek = $currentDateTime->dayOfWeek;
-    $currentTime = $currentDateTime->toTimeString();
-
-    // Cari jadwal kelas
-    $classSchedule = Booking::where('day_of_week', $dayOfWeek)
-        ->where('start_time', '<=', $currentTime)
-        ->where('end_time', '>=', $currentTime)
-        ->where('room_status', 'open')
-        ->whereHas('mahasiswas', function ($query) use ($mahasiswa) {
-            $query->where('mahasiswas_NIM', $mahasiswa->NIM);
-        })
-        ->first();
-
-    if (!$classSchedule) {
-        return response()->json(['error' => 'No active class for this schedule or room not opened'], 404);
-    }
-
-    // Cek presensi
-    $alreadyAttended = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
-        ->where('booking_id', $classSchedule->id)
-        ->whereDate('attended_at', $currentDateTime->toDateString())
-        ->exists();
-
-    if ($alreadyAttended) {
-        return response()->json(['error' => 'Already attended'], 400);
-    }
-
-    // Hitung pertemuan ke
-    $lastAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
-        ->where('booking_id', $classSchedule->id)
-        ->orderBy('pertemuan_ke', 'desc')
-        ->first();
-
-    $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
-
-    // Catat presensi baru
-    $attendance = DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
-        return Attendance::create([
-            'mahasiswas_NIM' => $mahasiswa->NIM,
-            'booking_id' => $classSchedule->id,
-            'attended_at' => $currentDateTime,
-            'pertemuan_ke' => $pertemuanKe,
+    {
+        // Validasi input
+        $validatedData = $request->validate([
+            'qr_code' => 'required|string',
         ]);
-    });
-
-    return response()->json([
-        'message' => 'Attendance marked successfully',
-        'attendance_id' => $attendance->id,
-        'pertemuan_ke' => $attendance->pertemuan_ke,
-    ], 200);
-}
+    
+        $qrCode = $validatedData['qr_code'];
+    
+        // Cari mahasiswa berdasarkan QR Code
+        $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
+    
+        if (!$mahasiswa) {
+            return response()->json(['error' => 'Invalid QR Code'], 404);
+        }
+    
+        // Ambil waktu sekarang dengan zona waktu lokal
+        $currentDateTime = Carbon::now('Asia/Jakarta');
+        $dayOfWeek = $currentDateTime->dayOfWeek;
+        $currentTime = $currentDateTime->toTimeString();
+    
+        // Cari jadwal kelas
+        $classSchedule = Booking::where('day_of_week', $dayOfWeek)
+            ->where('start_time', '<=', $currentTime)
+            ->where('end_time', '>=', $currentTime)
+            ->where('room_status', 'open')
+            ->whereHas('mahasiswas', function ($query) use ($mahasiswa) {
+                $query->where('mahasiswas_NIM', $mahasiswa->NIM);
+            })
+            ->first();
+    
+        if (!$classSchedule) {
+            return response()->json(['error' => 'No active class for this schedule or room not opened'], 404);
+        }
+    
+        // Cek presensi
+        $alreadyAttended = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
+            ->where('booking_id', $classSchedule->id)
+            ->whereDate('attended_at', $currentDateTime->toDateString())
+            ->exists();
+    
+        if ($alreadyAttended) {
+            return response()->json(['error' => 'Already attended'], 400);
+        }
+    
+        // Hitung pertemuan ke
+        $lastAttendance = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
+            ->where('booking_id', $classSchedule->id)
+            ->orderBy('pertemuan_ke', 'desc')
+            ->first();
+    
+        $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
+    
+        // Catat presensi baru
+        DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
+            Attendance::create([
+                'mahasiswas_NIM' => $mahasiswa->NIM,
+                'booking_id' => $classSchedule->id,
+                'attended_at' => $currentDateTime,
+                'pertemuan_ke' => $pertemuanKe,
+            ]);
+        });
+    
+        return response()->json([
+            'message' => 'Attendance marked successfully',
+            'status' => 'success', // Status sukses yang bisa digunakan oleh ESP32
+        ], 200);
+    }
+    
 
 
 
