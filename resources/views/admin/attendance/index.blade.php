@@ -127,61 +127,6 @@
     // Panggil updateClock setiap detik (1000ms)
     setInterval(updateClock, 1000);
 
-    // Fungsi untuk memuat data Catatan Kehadiran secara real-time tanpa menghilangkan data awal
-    function fetchRealtimeAttendances() {
-        $.ajax({
-            url: "{{ url('/api/realtime-attendances') }}",
-            method: "GET",
-            success: function(data) {
-                data.forEach((attendance) => {
-                    const existingRow = $(`#attendance-records tr[data-id="${attendance.id}"]`);
-                    if (existingRow.length === 0) {
-                        // Tambahkan data baru jika belum ada
-                        const newRow = `
-                            <tr data-id="${attendance.id}">
-                                <td></td>
-                                <td>${attendance.mahasiswas ? attendance.mahasiswas.Nama : ''}</td>
-                                <td>${attendance.mahasiswas ? attendance.mahasiswas.NIM : ''}</td>
-                                <td>${attendance.booking ? attendance.booking.Kode_Kelas : ''}</td>
-                                <td>${attendance.booking && attendance.booking.dosen ? attendance.booking.dosen.nama_dosen : ''}</td>
-                                <td>${attendance.booking && attendance.booking.matakuliah ? attendance.booking.matakuliah.Nama_MK : ''}</td>
-                                <td>${attendance.pertemuan_ke}</td>
-                                <td>${new Date(attendance.attended_at).toLocaleDateString('id-ID')}</td>
-                                <td>${new Date(attendance.attended_at).toLocaleDateString('id-ID', { weekday: 'long' })}</td>
-                                <td>${new Date(attendance.attended_at).toLocaleTimeString('id-ID')}</td>
-                                <td>
-                                    ${attendance.mahasiswas && attendance.mahasiswas.photo ? 
-                                        `<img src="{{ url('photo') }}/${attendance.mahasiswas.photo}" alt="Database Photo" style="max-width:250px;max-height:250px">`
-                                        : ''}
-                                </td>
-                                <td>
-                                    ${attendance.photo ? 
-                                        `<img src="{{ url('photo') }}/${attendance.photo}" alt="Real-Time Photo" style="max-width:250px;max-height:250px">`
-                                        : ''}
-                                </td>
-                                <td>
-                                    <form onclick="return confirm('Apakah Anda yakin ingin menghapus?')" class="d-inline" action="{{ url('admin/attendance/destroy') }}/${attendance.id}" method="POST">
-                                        @csrf
-                                        @method('delete')
-                                        <button class="btn btn-danger">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>`;
-                        $('#attendance-records').append(newRow);
-                    }
-                });
-            },
-            error: function(xhr) {
-                console.error('Error fetching data:', xhr);
-            }
-        });
-    }
-
-    // Panggil fungsi fetchRealtimeAttendances setiap 5 detik
-    setInterval(fetchRealtimeAttendances, 5000);
-
     // Initialize DataTables
     $(document).ready(function() {
         $('.datatable-attendance').DataTable({
