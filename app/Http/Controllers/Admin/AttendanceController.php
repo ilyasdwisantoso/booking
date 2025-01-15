@@ -145,49 +145,50 @@ class AttendanceController extends Controller
 
 
     public function uploadPhoto(Request $request)
-    {
-        // Validasi input hanya untuk file foto
-        $validatedData = $request->validate([
-            'photo' => 'required|image|mimes:jpeg,jpg,png|max:2048', // Maksimum 2MB
-        ]);
-    
-        // Cari attendance_id terbaru yang belum memiliki foto
-        $attendance = Attendance::whereNull('photo')
-            ->latest()
-            ->first();
-    
-        if (!$attendance) {
-            return response()->json([
-                'error' => 'No attendance record found to attach photo'
-            ], 404);
-        }
-    
-        // Ambil file foto dari input
-        $file = $validatedData['photo'];
-    
-        // Buat nama file unik untuk foto
-        $photoExtension = $file->getClientOriginalExtension();
-        $photoName = 'attendance_' . $attendance->id . '_' . time() . '.' . $photoExtension;
-    
-        // Simpan foto ke folder 'public/photo'
-        try {
-            $file->move(public_path('photo'), $photoName);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to upload photo: ' . $e->getMessage()
-            ], 500); // 500 Internal Server Error
-        }
-    
-        // Update nama file di database
-        $attendance->photo = $photoName;
-        $attendance->save();
-    
-        // Kembalikan response JSON dengan URL foto yang berhasil diupload
+{
+    // Validasi input hanya untuk file foto, maksimum 5MB
+    $validatedData = $request->validate([
+        'photo' => 'required|image|mimes:jpeg,jpg,png|max:5120', // Maksimum 5MB (5120 KB)
+    ]);
+
+    // Cari attendance_id terbaru yang belum memiliki foto
+    $attendance = Attendance::whereNull('photo')
+        ->latest()
+        ->first();
+
+    if (!$attendance) {
         return response()->json([
-            'success' => 'Photo uploaded successfully',
-            'photo_url' => url('photo/' . $photoName),
-        ], 200); // 200 OK
+            'error' => 'No attendance record found to attach photo'
+        ], 404);
     }
+
+    // Ambil file foto dari input
+    $file = $validatedData['photo'];
+
+    // Buat nama file unik untuk foto
+    $photoExtension = $file->getClientOriginalExtension();
+    $photoName = 'attendance_' . $attendance->id . '_' . time() . '.' . $photoExtension;
+
+    // Simpan foto ke folder 'public/photo'
+    try {
+        $file->move(public_path('photo'), $photoName);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Failed to upload photo: ' . $e->getMessage()
+        ], 500); // 500 Internal Server Error
+    }
+
+    // Update nama file di database
+    $attendance->photo = $photoName;
+    $attendance->save();
+
+    // Kembalikan response JSON dengan URL foto yang berhasil diupload
+    return response()->json([
+        'success' => 'Photo uploaded successfully',
+        'photo_url' => url('photo/' . $photoName),
+    ], 200); // 200 OK
+}
+
     
 
     
