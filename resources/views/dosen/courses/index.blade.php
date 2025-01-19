@@ -23,7 +23,6 @@
                             <th>Hari</th>
                             <th>Waktu</th>
                             <th>Kode Token Kelas(opsional)</th>
-                            <th>Status Kelas</th>
                             <th>Status Ruangan</th>
                             <th>Aksi</th>
                         </tr>
@@ -46,11 +45,6 @@
                                 <td>{{ $booking->day_of_week_text }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td>{{ $booking->code_token }}</td>
-                                <td id="status-{{ $booking->id }}">
-                                    <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
-                                        {{ $booking->status }}
-                                    </span>
-                                </td>
                                 <td id="room-status-{{ $booking->id }}">
                                     <span class="{{ $booking->room_status === 'open' ? 'text-success' : 'text-danger' }}">
                                         {{ $booking->room_status === 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup' }}
@@ -95,7 +89,6 @@
                             <th>Hari</th>
                             <th>Waktu</th>
                             <th>Kode Token Kelas(opsional)</th>
-                            <th>Status Kelas</th>
                             <th>Status Ruangan</th>
                             <th>Aksi</th>
                         </tr>
@@ -118,11 +111,6 @@
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td>{{ $booking->day_of_week_text }}</td>
                                 <td>{{ $booking->code_token }}</td>
-                                <td id="status-{{ $booking->id }}">
-                                    <span class="badge {{ $booking->status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success' }}">
-                                        {{ $booking->status }}
-                                    </span>
-                                </td>
                                 <td id="room-status-{{ $booking->id }}">
                                     <span class="{{ $booking->room_status === 'open' ? 'text-success' : 'text-danger' }}">
                                         {{ $booking->room_status === 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup' }}
@@ -152,30 +140,6 @@
 
 @push('script-alt')
 <script>
-    function updateClassStatus() {
-        fetch('/dosen/update-class-status')
-            .then(response => response.json())
-            .then(data => {
-                updateStatusDisplay(data.bookings);
-            })
-            .catch(error => console.error('Error:', error));
-    }
-
-    function updateStatusDisplay(bookings) {
-        bookings.forEach(booking => {
-            const statusElement = document.getElementById(`status-${booking.id}`);
-            const roomStatusElement = document.getElementById(`room-status-${booking.id}`);
-            if (statusElement) {
-                statusElement.innerHTML = `<span class="badge ${booking.status === 'kelas belum dimulai' ? 'badge-danger' : 'badge-success'}">${booking.status}</span>`;
-            }
-            if (roomStatusElement) {
-                roomStatusElement.innerHTML = `<span class="${booking.room_status === 'open' ? 'text-success' : 'text-danger'}">${booking.room_status === 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup'}</span>`;
-            }
-        });
-    }
-
-    setInterval(updateClassStatus, 250);
-
     $(function () {
         $('.datatable-today-booking, .datatable-upcoming-booking').DataTable({
             order: [[1, 'asc']],

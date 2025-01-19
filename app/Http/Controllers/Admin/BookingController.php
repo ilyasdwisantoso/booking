@@ -41,44 +41,7 @@ class BookingController extends Controller
 }
 
 
-    public function updateClassStatus()
-{
-    $currentDateTime = Carbon::now();
-    $dayOfWeek = $currentDateTime->format('w');
-    $currentTime = $currentDateTime->format('H:i:s');
-
-    $bookings = Booking::all();
-
-    foreach ($bookings as $booking) {
-        if ($booking->day_of_week == $dayOfWeek &&
-            $booking->start_time <= $currentTime &&
-            $booking->end_time >= $currentTime) {
-            $booking->status = 'kelas dimulai';
-            $booking->room_status = 'open'; // Ubah status ruangan menjadi "open"
-        } else {
-            $booking->status = 'kelas belum dimulai';
-            $booking->room_status = 'closed'; // Ubah status ruangan menjadi "closed"
-        }
-        $booking->save();
-    }
-
-    return response()->json(['success' => 'Class statuses and room statuses updated']);
-}
-
-
-    public function getClassStatuses()
-{
-    try {
-        \Log::info('Fetching class statuses');
-        $bookings = Booking::all();
-        \Log::info('Bookings fetched successfully', ['bookings' => $bookings]);
-        return response()->json(['bookings' => $bookings]);
-    } catch (\Exception $e) {
-        \Log::error('Error fetching class statuses: ' . $e->getMessage());
-        return response()->json(['error' => 'Something went wrong'], 500);
-    }
-}
-
+   
 
     /**
      * Show the form for creating a new resource.

@@ -64,10 +64,6 @@ Route::group(['middleware' => ['auth']], function() {
         Route::resource('attendance', AdminAttendanceController::class);
         Route::delete('attendance_mass_destroy', [AdminAttendanceController::class, 'massDestroy'])->name('attendance.mass_destroy');
 
-       // Tambahkan route ini ke dalam grup admin
-       Route::get('/update-class-status', [BookingController::class, 'updateClassStatus'])->name('update-class-status');
-       Route::get('/get-class-statuses', [BookingController::class, 'getClassStatuses'])->name('get-class-statuses');
-
     });
 
     // Dosen routes
