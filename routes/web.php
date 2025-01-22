@@ -90,10 +90,12 @@ Route::group(['middleware' => ['auth']], function() {
 
         Route::get('/profile', [DosenProfileController::class, 'show'])->name('profile.show');
         Route::post('/profile/change-password', [DosenProfileController::class, 'changePassword'])->name('profile.changePassword');
-        Route::patch('/attendance-mode/{booking}', [DosenAttendanceController::class, 'toggleAttendanceMode'])
-    ->name('attendance-mode.toggle');
-
-        
+        Route::patch('/attendance-mode/{booking}', [DosenAttendanceController::class, 'toggleAttendanceMode'])->name('attendance-mode.toggle');
+        // Route for editing room status
+        Route::get('/room-status/{booking}/edit', [DosenAttendanceController::class, 'editRoom'])->name('room-status.edit');
+        // Route untuk memperbarui status ruangan
+        Route::patch('/room-status/{booking}', [DosenAttendanceController::class, 'updateRoom'])->name('room-status.update');
+                
     });
 
     // Mahasiswa routes

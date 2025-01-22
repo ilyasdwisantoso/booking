@@ -146,5 +146,37 @@ class AttendanceController extends Controller
     return view('dosen.attendance.show', compact('booking', 'attendances'));
 }
 
+public function editRoom(Booking $booking)
+{
+    // Validasi apakah booking ini milik dosen yang sedang login
+    if ($booking->dosen_id !== Auth::user()->dosen->id) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    return view('dosen.attendance.edit', compact('booking'));
+}
+
+public function updateRoom(Request $request, Booking $booking)
+{
+    // Validasi input
+    $validatedData = $request->validate([
+        'room_status' => 'required|in:open,locked',
+    ]);
+
+    // Validasi apakah booking ini milik dosen yang sedang login
+    if ($booking->dosen_id !== Auth::user()->dosen->id) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    // Perbarui status ruangan
+    $booking->update([
+        'room_status' => $validatedData['room_status'],
+    ]);
+
+    return redirect()->route('dosen.attendance.show', $booking->id)
+                     ->with('success', 'Status ruangan berhasil diperbarui.');
+}
+
+
 
 }
