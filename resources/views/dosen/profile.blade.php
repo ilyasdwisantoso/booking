@@ -31,7 +31,7 @@
             <div class="row">
                 <div class="col-md-4">
                     <h5>QR Code</h5>
-                    <img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj.png')
+                    <img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj_sikiar.png')
                         ->errorCorrection('L')->size(200)->generate($dosen->nip)) !!}" alt="QR Code">
                 </div>
                 <div class="col-md-8">

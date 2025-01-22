@@ -49,7 +49,7 @@
                                 <td>{{$d->nama_dosen}}</td>
                                 <td>{{$d->nip}}</td>
                                 <td>{{$d->no_tlp}}</td>
-                                <td><img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj.png')
+                                <td><img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj_sikiar.png')
                                     ->errorCorrection('L')->size(200)->generate($d->qr_code)) !!} "></td>
                                 <td>
                                     <a href="{{route('admin.dosen.show', $d->id)}}" class="btn btn-success">

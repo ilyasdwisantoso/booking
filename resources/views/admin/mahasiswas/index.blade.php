@@ -55,7 +55,7 @@
                                     <img  src="{{ url('photo').'/'.$m->photo }}"  alt="Database Photo" style="max-width:250px;max-height:250px">
                                     @endif
                                 </td>
-                                <td><img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj.png')
+                                <td><img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj_sikiar.png')
                                     ->errorCorrection('L')->size(200)->generate($m->qr_code)) !!} "></td>
                                 <td>
                                     <a href="{{route('admin.mahasiswas.show', $m->NIM)}}" class="btn btn-success">

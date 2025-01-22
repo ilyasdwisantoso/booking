@@ -162,7 +162,7 @@
                 <tr>
                     <th>Qr Code Dosen</th>
                     <td class="text-center">
-                        <img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj.png')->errorCorrection('L')->size(200)->generate($dosen->qr_code)) !!}" alt="QR Code">
+                        <img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unsikiar.png')->errorCorrection('L')->size(200)->generate($dosen->qr_code)) !!}" alt="QR Code">
                     </td>
                 </tr>
             </table>

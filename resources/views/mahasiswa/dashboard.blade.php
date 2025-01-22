@@ -136,7 +136,7 @@
                         </tr>
                         <tr>
                             <th>QR Presensi</th>
-                            <td><img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj.png')
+                            <td><img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->merge('/storage/app/unj_sikiar.png')
                                 ->errorCorrection('L')->size(200)->generate($mahasiswa->qr_code)) !!} "></td>
                         </tr>
                     </table>
