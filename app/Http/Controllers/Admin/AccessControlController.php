@@ -12,40 +12,49 @@ class AccessControlController extends Controller
 {
     public function verifyAccess(Request $request)
     {
-        $qrCode = $request->input('qr_code');
-        $token = $request->input('token');
+        $validatedData = $request->validate([
+            'qr_code' => 'nullable|string',
+            'token' => 'nullable|string',
+        ]);
 
-        // Cek apakah dosen valid dengan QR code atau token
+        $qrCode = $validatedData['qr_code'] ?? null;
+        $token = $validatedData['token'] ?? null;
+
+        // Validasi QR Code atau Token
         $dosen = Dosen::where('qr_code', $qrCode)
-                    ->orWhereHas('bookings', function ($query) use ($token) {
-                        $query->where('code_token', $token);
-                    })
-                    ->first();
+            ->orWhereHas('bookings', function ($query) use ($token) {
+                $query->where('code_token', $token);
+            })
+            ->first();
 
         if (!$dosen) {
-            return response()->json(['error' => 'Access Denied'], 403);
+            return response()->json(['error' => 'Akses ditolak'], 403);
         }
 
         $currentDateTime = Carbon::now();
         $dayOfWeek = $currentDateTime->format('w');
 
-        // Periksa apakah dosen memiliki jadwal kelas yang aktif pada hari ini
+        // Cari jadwal kelas yang aktif
         $classSchedule = Booking::where('dosen_id', $dosen->id)
             ->where('day_of_week', $dayOfWeek)
             ->first();
 
         if (!$classSchedule) {
-            return response()->json(['error' => 'No active class for this schedule'], 404);
+            return response()->json(['error' => 'Tidak ada jadwal kelas aktif untuk hari ini'], 404);
         }
 
-        // Perbarui status ruangan menjadi "open" atau "locked"
+        // Perbarui status ruangan menjadi "open" dan aktifkan mode presensi
         $roomStatus = $classSchedule->room_status == 'locked' ? 'open' : 'locked';
-        $classSchedule->update(['room_status' => $roomStatus]);
+        $classSchedule->update([
+            'room_status' => $roomStatus,
+            'is_attendance_mode' => $roomStatus === 'open', // Mode presensi ON jika ruangan terbuka
+        ]);
 
         return response()->json([
-            'success' => 'Status updated',
+            'success' => 'Akses berhasil divalidasi',
             'action' => $roomStatus,
-            'room_status' => $classSchedule->room_status
+            'room_status' => $classSchedule->room_status,
+            'is_attendance_mode' => $classSchedule->is_attendance_mode,
         ], 200);
     }
 }

@@ -90,6 +90,9 @@ Route::group(['middleware' => ['auth']], function() {
 
         Route::get('/profile', [DosenProfileController::class, 'show'])->name('profile.show');
         Route::post('/profile/change-password', [DosenProfileController::class, 'changePassword'])->name('profile.changePassword');
+        Route::patch('/attendance-mode/{booking}', [DosenAttendanceController::class, 'toggleAttendanceMode'])
+    ->name('attendance-mode.toggle');
+
         
     });
 

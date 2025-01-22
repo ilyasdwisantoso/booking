@@ -3,7 +3,7 @@
     <!-- Sidebar - Brand -->
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url('/dosen/dashboard') }}">
         <div class="sidebar-brand-icon">
-            <img src="{{ asset('backend/img/logo-unj.png') }}" alt="Logo" style="width: 70px; height: 70px;">
+            <img src="{{ asset('img') }}/unj_sikiar.png" alt="Logo" style="width: 60px; height: 60px;">
         </div>
         <div class="sidebar-brand-text mx-3" style="font-size: 1.5rem; font-weight: bold;">{{ __('Dosen') }}</div>
     </a>

@@ -41,6 +41,42 @@ class AttendanceController extends Controller
         return view('dosen.attendance.index', compact('bookings', 'attendanceData', 'attendances'));
     }
 
+    public function toggleAttendanceMode(Request $request, Booking $booking)
+{
+    $validatedData = $request->validate([
+        'is_attendance_mode' => 'required|boolean',
+        'qr_code' => 'required|string',
+    ]);
+
+    $qrCode = $validatedData['qr_code'];
+
+    // Validasi QR Code/Token Dosen
+    $dosen = Dosen::where('qr_code', $qrCode)
+        ->orWhereHas('bookings', function ($query) use ($qrCode) {
+            $query->where('code_token', $qrCode);
+        })
+        ->first();
+
+    if (!$dosen) {
+        return response()->json(['error' => 'QR Code atau Token tidak valid'], 403);
+    }
+
+    // Validasi room_status
+    if ($booking->room_status === 'locked') {
+        return response()->json(['error' => 'Ruangan masih terkunci. Silakan buka ruangan terlebih dahulu.'], 403);
+    }
+
+    // Update mode presensi
+    $booking->update([
+        'is_attendance_mode' => $validatedData['is_attendance_mode'],
+    ]);
+
+    return response()->json([
+        'success' => 'Mode presensi berhasil diperbarui.',
+        'is_attendance_mode' => $booking->is_attendance_mode,
+    ]);
+}
+
     public function updatePertemuan(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);

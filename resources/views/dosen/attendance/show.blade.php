@@ -20,8 +20,8 @@
                             <th>Hari</th>
                             <th>Jam</th>
                             <th>Pertemuan Ke</th>
-                            <th>Foto Profile Mahasiswa</th>
-                            <th>Foto Camera</th>
+                            <th>Foto Profil Mahasiswa</th>
+                            <th>Mode Presensi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,14 +44,13 @@
                                         <span>Tidak Ada Foto</span>
                                     @endif
                                 </td>
-                                <td>
-                                    @if ($attendance->photo)
-                                        <img src="{{ url('photo').'/'.$attendance->photo }}" 
-                                             alt="Real-Time Photo" 
-                                             style="max-width:250px; max-height:250px; object-fit:cover;">
-                                    @else
-                                        <span>Tidak Ada Foto</span>
-                                    @endif
+                                <td id="attendance-mode-{{ $booking->id }}">
+                                    <label class="switch">
+                                        <input type="checkbox" 
+                                               {{ $booking->is_attendance_mode ? 'checked' : '' }} 
+                                               onchange="toggleAttendanceMode({{ $booking->id }}, this.checked)">
+                                        <span class="slider round"></span>
+                                    </label>
                                 </td>
                             </tr>
                         @endforeach
@@ -65,17 +64,78 @@
 
 @push('script-alt')
 <script>
-    $(function () {
-        // Initialize DataTables for Detail Kehadiran
-        $('.datatable-attendance-records:not(.ajaxTable)').DataTable({
-            order: [[1, 'asc']],
-            pageLength: 50,
-        });
+    function toggleAttendanceMode(bookingId, newStatus) {
+        const qrCode = prompt("Masukkan QR Code Dosen/Token Kelas:");
+        if (!qrCode) {
+            alert("Validasi QR Code atau Token diperlukan.");
+            document.querySelector(`#attendance-mode-${bookingId} input`).checked = !newStatus;
+            return;
+        }
 
-        // Adjust columns on tab switch
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
-        });
-    });
+        fetch(`/dosen/attendance-mode/${bookingId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: JSON.stringify({ is_attendance_mode: newStatus, qr_code: qrCode }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+            } else if (data.error) {
+                alert(data.error);
+                // Revert the switch state
+                document.querySelector(`#attendance-mode-${bookingId} input`).checked = !newStatus;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 </script>
 @endpush
+
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 20px;
+    }
+
+    .switch input {
+        display: none;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 20px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #4CAF50;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(14px);
+    }
+</style>
