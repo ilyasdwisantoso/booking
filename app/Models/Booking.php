@@ -23,6 +23,7 @@ class Booking extends Model
         'start_time',
         'end_time',
         'status',
+        'room_status',
     ];
 
     protected $appends = ['day_of_week_text', 'status_text']; // jika membutuhkan
