@@ -21,7 +21,7 @@
                             <th>Hari</th>
                             <th>Jam</th>
                             <th>Foto Profile Mahasiswa</th>
-                            <th>Foto Camera</th>
+                            <th>Pertemuan ke</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,15 +42,7 @@
                                         <span>Tidak Ada Foto</span>
                                     @endif
                                 </td>
-                                <td>
-                                    @if ($attendance->photo)
-                                        <img src="{{ url('photo').'/'.$attendance->photo }}" 
-                                             alt="Real-Time Photo" 
-                                             style="max-width:250px; max-height:250px; object-fit:cover;">
-                                    @else
-                                        <span>Tidak Ada Foto</span>
-                                    @endif
-                                </td>
+                                <td>{{ $attendance->pertemuan_ke }}</td>
                             </tr>
                         @endforeach
                     </tbody>
