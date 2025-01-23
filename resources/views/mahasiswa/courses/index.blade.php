@@ -9,7 +9,7 @@
     <!-- Daftar Kuliah Hari Ini -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex">
-            <h6 class="m-0 font-weight-bold text-primary">Daftar Kuliah Hari Ini</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Data Jadwal Kuliah Hari Ini</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -64,7 +64,7 @@
     <!-- Daftar Jadwal Kuliah Mendatang -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex">
-            <h6 class="m-0 font-weight-bold text-primary">Daftar Jadwal Kuliah Mendatang</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Data Jadwal Kuliah Mendatang</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
