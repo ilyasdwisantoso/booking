@@ -12,6 +12,7 @@ class AccessControlController extends Controller
 {
     public function verifyAccess(Request $request)
 {
+    // Validasi input
     $validatedData = $request->validate([
         'qr_code' => 'nullable|string',
         'token' => 'nullable|string',
@@ -21,9 +22,13 @@ class AccessControlController extends Controller
     $token = $validatedData['token'] ?? null;
 
     // Validasi QR Code atau Token
-    $dosen = Dosen::where('qr_code', $qrCode)
-        ->orWhereHas('bookings', function ($query) use ($token) {
-            $query->where('code_token', $token);
+    $dosen = Dosen::when($qrCode, function ($query) use ($qrCode) {
+            $query->where('qr_code', $qrCode);
+        })
+        ->when($token, function ($query) use ($token) {
+            $query->orWhereHas('bookings', function ($query) use ($token) {
+                $query->where('code_token', $token);
+            });
         })
         ->first();
 
@@ -32,9 +37,9 @@ class AccessControlController extends Controller
     }
 
     $currentDateTime = Carbon::now();
-    $dayOfWeek = $currentDateTime->format('w');
+    $dayOfWeek = $currentDateTime->format('w'); // 0: Sunday, 1: Monday, ...
 
-    // Cari jadwal kelas yang aktif
+    // Cari jadwal kelas yang aktif berdasarkan dosen dan hari
     $classSchedule = Booking::where('dosen_id', $dosen->id)
         ->where('day_of_week', $dayOfWeek)
         ->first();
@@ -43,21 +48,22 @@ class AccessControlController extends Controller
         return response()->json(['error' => 'Tidak ada jadwal kelas aktif untuk hari ini'], 404);
     }
 
-    // Perbarui status ruangan dan status
-    $roomStatus = $classSchedule->room_status == 'locked' ? 'open' : 'locked';
-    $statusText = $roomStatus === 'open' ? 'pintu dibuka' : 'pintu ditutup';
+    // Update status ruangan
+    $newRoomStatus = $classSchedule->room_status === 'locked' ? 'open' : 'locked';
+    $statusText = $newRoomStatus === 'open' ? 'pintu dibuka' : 'pintu ditutup';
 
     $classSchedule->update([
-        'room_status' => $roomStatus,
+        'room_status' => $newRoomStatus,
         'status' => $statusText,
     ]);
 
     return response()->json([
         'success' => 'Akses berhasil divalidasi',
-        'action' => $roomStatus,
+        'action' => $newRoomStatus, // Action yang diambil
         'room_status' => $classSchedule->room_status,
         'status' => $classSchedule->status,
     ], 200);
 }
+
 
 }
