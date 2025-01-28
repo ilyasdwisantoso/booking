@@ -49,6 +49,7 @@
                             <th>Jam</th>
                             <th>Pertemuan Ke</th>
                             <th>Foto Profil Mahasiswa</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -70,6 +71,15 @@
                                     @else
                                         <span>Tidak Ada Foto</span>
                                     @endif
+                                </td>
+                                <td>
+                                    <form onclick="return confirm('Apakah Anda yakin ingin menghapus?')" class="d-inline" action="{{ route('dosen.attendance.destroy', $attendance->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-danger">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </form>                                    
                                 </td>
                             </tr>
                         @endforeach

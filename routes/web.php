@@ -95,7 +95,8 @@ Route::group(['middleware' => ['auth']], function() {
         Route::get('/room-status/{booking}/edit', [DosenAttendanceController::class, 'editRoom'])->name('room-status.edit');
         // Route untuk memperbarui status ruangan
         Route::patch('/room-status/{booking}', [DosenAttendanceController::class, 'updateRoom'])->name('room-status.update');
-                
+        Route::delete('attendance/{attendance}', [DosenAttendanceController::class, 'destroy'])->name('attendance.destroy');
+
     });
 
     // Mahasiswa routes

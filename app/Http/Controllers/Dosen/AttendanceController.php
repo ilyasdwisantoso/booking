@@ -177,6 +177,17 @@ public function updateRoom(Request $request, Booking $booking)
                      ->with('success', 'Status ruangan berhasil diperbarui.');
 }
 
+public function destroy($id)
+{
+    $attendance = Attendance::findOrFail($id);
+    $bookingId = $attendance->booking_id;
 
+    $attendance->delete();
+
+    return redirect()->route('dosen.attendance.show', $bookingId)->with([
+        'message' => 'Data berhasil dihapus.',
+        'alert-type' => 'danger'
+    ]);
+}
 
 }
