@@ -48,6 +48,7 @@
                                 </td>  
                                 <td>{{ $booking->dosen->nama_dosen }}</td>
                                 <td>{{ $booking->ruangan->no_ruangan }}</td>
+                                <td>{{ $booking->day_of_week_text }}</td>
                                 <td>{{ $booking->start_time }} - {{ $booking->end_time }}</td>
                                 <td>{{ $booking->code_token }}</td>
                                 <td id="room-status-{{ $booking->id }}">
@@ -55,7 +56,6 @@
                                         {{ $booking->room_status === 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup' }}
                                     </span>
                                 </td>
-                                <td>{{ $booking->day_of_week_text }}</td>
                                 <td>
                                     <a href="{{route('admin.booking.show', $booking->id)}}" class="btn btn-success btn-sm">
                                         <i class="fa fa-eye"></i>
