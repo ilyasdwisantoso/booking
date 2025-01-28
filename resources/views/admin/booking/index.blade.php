@@ -25,6 +25,7 @@
                             <th>Nama Mahasiswa</th>
                             <th>Dosen</th>
                             <th>Ruangan</th>
+                            <th>Hari</th>
                             <th>Waktu</th>
                             <th>Kode Token Kelas</th>
                             <th>Status Ruangan</th>
@@ -54,6 +55,7 @@
                                         {{ $booking->room_status === 'open' ? 'Ruangan Dibuka' : 'Ruangan Ditutup' }}
                                     </span>
                                 </td>
+                                <td>{{ $booking->day_of_week_text }}</td>
                                 <td>
                                     <a href="{{route('admin.booking.show', $booking->id)}}" class="btn btn-success btn-sm">
                                         <i class="fa fa-eye"></i>
