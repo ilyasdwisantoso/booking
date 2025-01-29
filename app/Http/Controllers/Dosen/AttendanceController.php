@@ -184,6 +184,7 @@ private function sendRoomStatusToESP32($status) {
     $esp32_ip = "http://192.168.251.192/update-room-status"; // IP ESP32
 
     $client = new \GuzzleHttp\Client();
+    
     try {
         $response = $client->post($esp32_ip, [
             'json' => ['room_status' => $status],
