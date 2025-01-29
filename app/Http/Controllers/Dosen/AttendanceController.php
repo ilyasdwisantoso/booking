@@ -181,12 +181,12 @@ public function updateRoom(Request $request, Booking $booking) {
 
 
 private function sendRoomStatusToESP32($status) {
-    $esp32_url = "https://d10e-2404-c0-5c20-00-18cb-aa57.ngrok-free.app/update-room-status"; // URL Ngrok
-    
+    $esp32_ip = "http://192.168.251.192/update-room-status"; // IP ESP32
+
     $client = new \GuzzleHttp\Client();
 
     try {
-        $response = $client->post($esp32_url, [
+        $response = $client->post($esp32_ip, [
             'json' => ['room_status' => $status],
             'timeout' => 5 // Timeout 5 detik
         ]);
@@ -200,7 +200,6 @@ private function sendRoomStatusToESP32($status) {
         \Log::error("ESP32 request error: " . $e->getMessage());
     }
 }
-
 
 
 
