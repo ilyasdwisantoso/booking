@@ -181,7 +181,7 @@ public function updateRoom(Request $request, Booking $booking) {
 
 
 private function sendRoomStatusToESP32($status) {
-    $esp32_ip = "http://sikiarunj.com/update-room-status"; // IP ESP32
+    $esp32_ip = "https://2332-2404-c0-5c20-00-18cb-aa57.ngrok-free.app/update-room-status"; // IP ESP32
 
     $client = new \GuzzleHttp\Client();
 
