@@ -156,9 +156,9 @@ public function editRoom(Booking $booking)
     return view('dosen.attendance.edit', compact('booking'));
 }
 
-public function updateRoom(Request $request, Booking $booking)
-{
-    // Validasi input
+
+
+public function updateRoom(Request $request, Booking $booking) {
     $validatedData = $request->validate([
         'room_status' => 'required|in:open,locked',
     ]);
@@ -167,15 +167,40 @@ public function updateRoom(Request $request, Booking $booking)
     if ($booking->dosen_id !== Auth::user()->dosen->id) {
         abort(403, 'Unauthorized action.');
     }
-
-    // Perbarui status ruangan
+    // Perbarui status ruangan di database
     $booking->update([
         'room_status' => $validatedData['room_status'],
     ]);
 
+    // Kirim status ke ESP32
+    $this->sendRoomStatusToESP32($validatedData['room_status']);
+
     return redirect()->route('dosen.attendance.show', $booking->id)
                      ->with('success', 'Status ruangan berhasil diperbarui.');
 }
+
+
+private function sendRoomStatusToESP32($status) {
+    $esp32_ip = "http://192.168.251.192/update-room-status"; // IP ESP32
+
+    $client = new \GuzzleHttp\Client();
+    try {
+        $response = $client->post($esp32_ip, [
+            'json' => ['room_status' => $status],
+            'timeout' => 5 // Timeout 5 detik
+        ]);
+
+        if ($response->getStatusCode() == 200) {
+            \Log::info("ESP32 updated successfully: " . $status);
+        } else {
+            \Log::error("ESP32 update failed: " . $response->getStatusCode());
+        }
+    } catch (\Exception $e) {
+        \Log::error("ESP32 request error: " . $e->getMessage());
+    }
+}
+
+
 
 public function destroy($id)
 {
