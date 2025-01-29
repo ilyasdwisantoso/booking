@@ -194,9 +194,13 @@ private function sendRoomStatusToESP32($status) {
         if ($response->getStatusCode() == 200) {
             \Log::info("ESP32 updated successfully: " . $status);
         } else {
+            // Simpan error ke session jika gagal
+            session()->flash('error', "ESP32 update failed: " . $response->getStatusCode());
             \Log::error("ESP32 update failed: " . $response->getStatusCode());
         }
     } catch (\Exception $e) {
+        // Simpan error ke session jika ada exception
+        session()->flash('error', "ESP32 request error: " . $e->getMessage());
         \Log::error("ESP32 request error: " . $e->getMessage());
     }
 }
