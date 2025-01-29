@@ -172,57 +172,9 @@ public function updateRoom(Request $request, Booking $booking) {
         'room_status' => $validatedData['room_status'],
     ]);
 
-    // Kirim status ke ESP32
-    $this->sendRoomStatusToESP32($validatedData['room_status']);
-
     return redirect()->route('dosen.attendance.show', $booking->id)
                      ->with('success', 'Status ruangan berhasil diperbarui.');
 }
-
-
-private function sendRoomStatusToESP32($status) {
-    $esp32_url = "https://c65c-2404-c0-5c20-00-18cb-aa57.ngrok-free.app /update-room-status"; // URL ngrok ke ESP32
-
-    $client = new \GuzzleHttp\Client();
-
-    try {
-        // Kirim POST request ke ESP32
-        $response = $client->post($esp32_url, [
-            'json' => ['room_status' => $status],
-            'timeout' => 10, // Timeout 10 detik
-        ]);
-
-        // Periksa kode status respons
-        if ($response->getStatusCode() === 200) {
-            $responseBody = json_decode($response->getBody(), true);
-
-            // Validasi apakah respons ESP32 memiliki "success" dan nilainya true
-            if (isset($responseBody['success']) && $responseBody['success'] === true) {
-                \Log::info("ESP32 updated successfully: " . $status);
-            } else {
-                \Log::error("ESP32 responded but not successful: " . json_encode($responseBody));
-                session()->flash('error', "ESP32 responded but not successful: " . json_encode($responseBody));
-            }
-        } else {
-            \Log::error("ESP32 update failed with status code: " . $response->getStatusCode());
-            session()->flash('error', "ESP32 update failed with status code: " . $response->getStatusCode());
-        }
-    } catch (\GuzzleHttp\Exception\RequestException $e) {
-        // Menangkap error request
-        $errorMessage = $e->hasResponse()
-            ? $e->getResponse()->getBody()->getContents()
-            : $e->getMessage();
-
-        \Log::error("ESP32 request error: " . $errorMessage);
-        session()->flash('error', "ESP32 request error: " . $errorMessage);
-    } catch (\Exception $e) {
-        // Menangkap error lainnya
-        \Log::error("Unexpected error: " . $e->getMessage());
-        session()->flash('error', "Unexpected error: " . $e->getMessage());
-    }
-}
-
-
 
 
 public function destroy($id)
