@@ -27,8 +27,27 @@ use App\Http\Controllers\Mahasiswa\{
     AttendanceController as MahasiswaAttendanceController,
     ProfileController as MahasiswaProfileController
 };
+use GuzzleHttp\Client;
 
+Route::get('/test-esp32', function () {
+    $esp32_ip = "http://192.168.251.192/update-room-status";
+    $client = new Client();
 
+    try {
+        $response = $client->post($esp32_ip, [
+            'json' => ['room_status' => 'open'],
+            'timeout' => 5
+        ]);
+
+        if ($response->getStatusCode() == 200) {
+            return "ESP32 connected successfully!";
+        } else {
+            return "Failed to connect to ESP32. HTTP Code: " . $response->getStatusCode();
+        }
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
 
 // Auth routes
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
