@@ -188,7 +188,7 @@ private function sendRoomStatusToESP32($status) {
     try {
         $response = $client->post($esp32_ip, [
             'json' => ['room_status' => $status],
-            'timeout' => 5 // Timeout 5 detik
+            'timeout' => 10 // Timeout 10 detik
         ]);
 
         if ($response->getStatusCode() == 200) {
