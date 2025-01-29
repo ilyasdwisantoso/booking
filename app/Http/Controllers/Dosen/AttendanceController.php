@@ -181,7 +181,7 @@ public function updateRoom(Request $request, Booking $booking) {
 
 
 private function sendRoomStatusToESP32($status) {
-    $esp32_url = "https://08db-2404-c0-5c20-00-18cb-aa57.ngrok-free.app/update-room-status"; // URL ngrok ke ESP32
+    $esp32_url = "https://c65c-2404-c0-5c20-00-18cb-aa57.ngrok-free.app /update-room-status"; // URL ngrok ke ESP32
 
     $client = new \GuzzleHttp\Client();
 
