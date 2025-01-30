@@ -63,7 +63,7 @@ class DashboardController extends Controller
         ->orderBy('start_time')
         ->get();
 
-        dd($upcomingBookings);
+        
     return view('mahasiswa.courses.index', compact('todayBookings', 'upcomingBookings'));
 }
 
