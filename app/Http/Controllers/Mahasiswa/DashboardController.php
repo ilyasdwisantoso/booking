@@ -49,7 +49,7 @@ class DashboardController extends Controller
         ->orderBy('start_time')
         ->get();
 
-        dd($todayBookings);
+        
     // Daftar kuliah mendatang
     $upcomingBookings = $mahasiswa->bookings()
         ->where(function ($query) {
