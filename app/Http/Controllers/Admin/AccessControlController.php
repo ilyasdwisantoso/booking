@@ -42,8 +42,7 @@ class AccessControlController extends Controller
     // Cari jadwal kelas yang aktif berdasarkan dosen dan hari
     $classSchedule = Booking::where('dosen_id', $dosen->id)
         ->where('day_of_week', $dayOfWeek)
-        ->where('start_time', '<=', $currentTime)
-        ->where('end_time', '>=', $currentTime)
+        
 
         ->first();
 
