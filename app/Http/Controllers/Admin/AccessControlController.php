@@ -42,10 +42,11 @@ class AccessControlController extends Controller
     // Cari jadwal kelas yang aktif berdasarkan dosen dan hari
     $classSchedule = Booking::where('dosen_id', $dosen->id)
         ->where('day_of_week', $dayOfWeek)
+        ->where('start_time', '<=', $currentTime)
         ->first();
 
     if (!$classSchedule) {
-        return response()->json(['error' => 'Tidak ada jadwal kelas aktif untuk hari ini'], 404);
+        return response()->json(['error' => 'Tidak ada jadwal kelas aktif untuk hari ini.'], 404);
     }
 
     // Update status ruangan

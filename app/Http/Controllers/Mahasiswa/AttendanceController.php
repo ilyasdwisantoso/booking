@@ -81,7 +81,7 @@ public function show($bookingId)
     if ($booking->mahasiswa_id !== $mahasiswa->id) {
         return redirect()->route('mahasiswa.attendance.index')->with([
             'message' => 'Anda tidak memiliki akses ke kelas ini!',
-            'alert-type' => 'danger'
+            'alert-type' => 'danger aletrt'
         ]);
     }
 
