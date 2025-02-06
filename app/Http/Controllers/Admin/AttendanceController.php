@@ -77,9 +77,11 @@ class AttendanceController extends Controller
     // Validasi input
     $validatedData = $request->validate([
         'qr_code' => 'required|string',
+        'room_id' => 'required|integer', // Validasi room_id
     ]);
 
     $qrCode = $validatedData['qr_code'];
+    $roomId = $validatedData['room_id'];
 
     // Cari mahasiswa berdasarkan QR Code
     $mahasiswa = Mahasiswa::where('qr_code', $qrCode)->first();
@@ -88,16 +90,16 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'Invalid QR Code'], 404);
     }
 
-    // Ambil waktu sekarang dengan zona waktu lokal
     $currentDateTime = Carbon::now('Asia/Jakarta');
     $dayOfWeek = $currentDateTime->dayOfWeek;
     $currentTime = $currentDateTime->toTimeString();
 
-    // Cari jadwal kelas
+    // Cari jadwal kelas yang aktif
     $classSchedule = Booking::where('day_of_week', $dayOfWeek)
         ->where('start_time', '<=', $currentTime)
         ->where('end_time', '>=', $currentTime)
-        ->where('room_status', 'open')
+        ->where('room_status', 'open') // Validasi ruangan yang terbuka
+        ->where('ruangan_id', $roomId) // Validasi room_id
         ->whereHas('mahasiswas', function ($query) use ($mahasiswa) {
             $query->where('mahasiswas_NIM', $mahasiswa->NIM);
         })
@@ -107,7 +109,7 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'No active class for this schedule or room not opened'], 404);
     }
 
-    // Cek presensi
+    // Cek presensi sebelumnya
     $alreadyAttended = Attendance::where('mahasiswas_NIM', $mahasiswa->NIM)
         ->where('booking_id', $classSchedule->id)
         ->whereDate('attended_at', $currentDateTime->toDateString())
@@ -126,19 +128,27 @@ class AttendanceController extends Controller
     $pertemuanKe = $lastAttendance ? $lastAttendance->pertemuan_ke + 1 : 1;
 
     // Catat presensi baru
-    DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
-        Attendance::create([
-            'mahasiswas_NIM' => $mahasiswa->NIM,
-            'booking_id' => $classSchedule->id,
-            'attended_at' => $currentDateTime,
-            'pertemuan_ke' => $pertemuanKe,
-        ]);
-    });
+    try {
+        DB::transaction(function () use ($mahasiswa, $classSchedule, $currentDateTime, $pertemuanKe) {
+            Attendance::create([
+                'mahasiswas_NIM' => $mahasiswa->NIM,
+                'booking_id' => $classSchedule->id,
+                'attended_at' => $currentDateTime,
+                'pertemuan_ke' => $pertemuanKe,
+            ]);
+        });
 
-    return response()->json([
-        'message' => 'Attendance marked successfully',
-        'status' => 'success', // Status sukses yang bisa digunakan oleh ESP32
-    ], 200);
+        return response()->json([
+            'message' => 'Attendance marked successfully',
+            'status' => 'success',
+            'room_id' => $classSchedule->ruangan_id,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'An error occurred while marking attendance',
+            'details' => $e->getMessage(),
+        ], 500);
+    }
 }
 
     
