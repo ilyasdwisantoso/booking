@@ -65,7 +65,6 @@
                                 <select id="role" class="form-control @error('role') is-invalid @enderror" name="role" required>
                                     <option value="mahasiswa">{{ __('Mahasiswa') }}</option>
                                     <option value="dosen">{{ __('Dosen') }}</option>
-                                    <option value="dosen">{{ __('Penanggung Jawab') }}</option>
                                 </select>
                                 @error('role')
                                     <span class="invalid-feedback" role="alert">
